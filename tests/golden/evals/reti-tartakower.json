@@ -1,0 +1,468 @@
+{
+  "engine": "Stockfish 19 Lite WASM",
+  "depth": 16,
+  "fens": [
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+    "rnbqkbnr/pp1ppppp/2p5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+    "rnbqkbnr/pp1ppppp/2p5/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq - 0 2",
+    "rnbqkbnr/pp2pppp/2p5/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3",
+    "rnbqkbnr/pp2pppp/2p5/3p4/3PP3/2N5/PPP2PPP/R1BQKBNR b KQkq - 1 3",
+    "rnbqkbnr/pp2pppp/2p5/8/3Pp3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 4",
+    "rnbqkbnr/pp2pppp/2p5/8/3PN3/8/PPP2PPP/R1BQKBNR b KQkq - 0 4",
+    "rnbqkb1r/pp2pppp/2p2n2/8/3PN3/8/PPP2PPP/R1BQKBNR w KQkq - 1 5",
+    "rnbqkb1r/pp2pppp/2p2n2/8/3PN3/3Q4/PPP2PPP/R1B1KBNR b KQkq - 2 5",
+    "rnbqkb1r/pp3ppp/2p2n2/4p3/3PN3/3Q4/PPP2PPP/R1B1KBNR w KQkq - 0 6",
+    "rnbqkb1r/pp3ppp/2p2n2/4P3/4N3/3Q4/PPP2PPP/R1B1KBNR b KQkq - 0 6",
+    "rnb1kb1r/pp3ppp/2p2n2/q3P3/4N3/3Q4/PPP2PPP/R1B1KBNR w KQkq - 1 7",
+    "rnb1kb1r/pp3ppp/2p2n2/q3P3/4N3/3Q4/PPPB1PPP/R3KBNR b KQkq - 2 7",
+    "rnb1kb1r/pp3ppp/2p2n2/4q3/4N3/3Q4/PPPB1PPP/R3KBNR w KQkq - 0 8",
+    "rnb1kb1r/pp3ppp/2p2n2/4q3/4N3/3Q4/PPPB1PPP/2KR1BNR b kq - 1 8",
+    "rnb1kb1r/pp3ppp/2p5/4q3/4n3/3Q4/PPPB1PPP/2KR1BNR w kq - 0 9",
+    "rnbQkb1r/pp3ppp/2p5/4q3/4n3/8/PPPB1PPP/2KR1BNR b kq - 1 9",
+    "rnbk1b1r/pp3ppp/2p5/4q3/4n3/8/PPPB1PPP/2KR1BNR w - - 0 10",
+    "rnbk1b1r/pp3ppp/2p5/4q1B1/4n3/8/PPP2PPP/2KR1BNR b - - 1 10",
+    "rnb2b1r/ppk2ppp/2p5/4q1B1/4n3/8/PPP2PPP/2KR1BNR w - - 2 11",
+    "rnbB1b1r/ppk2ppp/2p5/4q3/4n3/8/PPP2PPP/2KR1BNR b - - 3 11"
+  ],
+  "evals": [
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 25
+      },
+      "best": "e2e4",
+      "pv": [
+        "e2e4",
+        "e7e5",
+        "g1f3",
+        "b8c6",
+        "d2d4",
+        "e5d4",
+        "f3d4",
+        "g8f6",
+        "b1c3",
+        "f8b4",
+        "d4c6",
+        "b7c6",
+        "f1d3",
+        "d7d5",
+        "e4d5",
+        "c6d5"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 26
+      },
+      "best": "e7e5",
+      "pv": [
+        "e7e5",
+        "g1f3",
+        "b8c6",
+        "f1c4",
+        "g8f6",
+        "f3g5",
+        "d7d5",
+        "e4d5",
+        "c6a5",
+        "c4b5",
+        "c8d7",
+        "d1e2",
+        "f8e7",
+        "g5f3",
+        "c7c6"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 46
+      },
+      "best": "d2d4",
+      "pv": [
+        "d2d4",
+        "d7d5",
+        "e4e5",
+        "c8f5",
+        "g2g4",
+        "f5g6",
+        "g1e2",
+        "e7e6",
+        "h2h4",
+        "h7h6",
+        "c1e3",
+        "d8b6"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 46
+      },
+      "best": "d7d5",
+      "pv": [
+        "d7d5",
+        "e4e5",
+        "c6c5",
+        "g1f3",
+        "c5d4",
+        "f3d4",
+        "b8c6",
+        "d4c6",
+        "b7c6",
+        "f1d3",
+        "c8a6",
+        "e5e6",
+        "a6d3",
+        "c2d3",
+        "f7e6",
+        "e1g1",
+        "g7g6"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 34
+      },
+      "best": "e4e5",
+      "pv": [
+        "e4e5",
+        "c6c5",
+        "c2c3",
+        "b8c6",
+        "g1e2",
+        "e7e6",
+        "b1d2",
+        "c8d7",
+        "d2f3",
+        "d8b6",
+        "a2a3",
+        "c5d4"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 18
+      },
+      "best": "d5e4",
+      "pv": [
+        "d5e4",
+        "c3e4",
+        "g8f6",
+        "e4f6",
+        "e7f6",
+        "f1c4",
+        "b8a6",
+        "c1e3",
+        "a6c7",
+        "d1f3",
+        "f8e7",
+        "g1e2",
+        "e8g8"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 22
+      },
+      "best": "c3e4",
+      "pv": [
+        "c3e4",
+        "g8f6",
+        "e4f6",
+        "e7f6",
+        "c2c3",
+        "f8e7",
+        "f1d3",
+        "c6c5",
+        "g1f3",
+        "b8c6",
+        "c1e3",
+        "c5d4",
+        "f3d4",
+        "c6d4",
+        "e3d4",
+        "e8g8"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 16
+      },
+      "best": "g8f6",
+      "pv": ["g8f6", "e4f6", "e7f6", "c2c3", "g7g6", "f1c4", "b8d7", "a2a4", "d7b6", "c4a2"],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 33
+      },
+      "best": "e4f6",
+      "pv": [
+        "e4f6",
+        "e7f6",
+        "c2c3",
+        "f8d6",
+        "f1d3",
+        "e8g8",
+        "d1c2",
+        "g7g6",
+        "g1e2",
+        "g8g7",
+        "c1e3",
+        "f8e8",
+        "e1c1",
+        "b8a6"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 26
+      },
+      "best": "f6e4",
+      "pv": [
+        "f6e4",
+        "d3e4",
+        "b8d7",
+        "g1f3",
+        "d7f6",
+        "e4f4",
+        "f6d5",
+        "f4d2",
+        "d5f6",
+        "h2h3",
+        "c8f5",
+        "f1d3",
+        "f5d3",
+        "d2d3",
+        "e7e6",
+        "c1f4"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 91
+      },
+      "best": "d4e5",
+      "pv": [
+        "d4e5",
+        "d8d3",
+        "f1d3",
+        "f6e4",
+        "d3e4",
+        "b8d7",
+        "c1f4",
+        "d7c5",
+        "e4f3",
+        "c5e6",
+        "f4e3",
+        "f8b4",
+        "e1e2",
+        "e8g8",
+        "a1d1",
+        "b4e7",
+        "h2h4",
+        "f8e8",
+        "h4h5",
+        "f7f6",
+        "h5h6"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 89
+      },
+      "best": "d8d3",
+      "pv": [
+        "d8d3",
+        "f1d3",
+        "f6e4",
+        "d3e4",
+        "b8d7",
+        "c1f4",
+        "d7c5",
+        "e4f3",
+        "c5e6",
+        "f4g3",
+        "h7h5",
+        "h2h4",
+        "e6d4",
+        "f3e4",
+        "c8f5",
+        "e4f5",
+        "d4f5",
+        "g3f4",
+        "f8c5"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 122
+      },
+      "best": "c1d2",
+      "pv": ["c1d2", "a5e5", "e1c1", "f8e7", "e4f6", "e5f6", "g1f3"],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 141
+      },
+      "best": "a5e5",
+      "pv": [
+        "a5e5",
+        "e1c1",
+        "f8e7",
+        "e4f6",
+        "e5f6",
+        "g1f3",
+        "e8g8",
+        "d2g5",
+        "f6e6",
+        "d3c3",
+        "e7g5",
+        "f3g5",
+        "e6f5",
+        "c3e3",
+        "h7h6",
+        "g5e4",
+        "f5e5",
+        "f2f4",
+        "e5c7"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 112
+      },
+      "best": "e1c1",
+      "pv": [
+        "e1c1",
+        "f8e7",
+        "e4f6",
+        "e5f6",
+        "g1f3",
+        "e8g8",
+        "d2g5",
+        "f6e6",
+        "h2h4",
+        "e7f6",
+        "d3a3",
+        "b8d7",
+        "f1d3",
+        "h7h6",
+        "g2g4",
+        "e6g4"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 151
+      },
+      "best": "f8e7",
+      "pv": [
+        "f8e7",
+        "e4f6",
+        "e5f6",
+        "g1f3",
+        "e8g8",
+        "d2g5",
+        "f6e6",
+        "h2h4",
+        "e7f6",
+        "d3a3",
+        "b8d7",
+        "g2g3",
+        "b7b5",
+        "f1h3",
+        "b5b4",
+        "a3a5",
+        "e6e2",
+        "g5f6",
+        "d7f6",
+        "f3d4"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "mate",
+        "mate": 3
+      },
+      "best": "d3d8",
+      "pv": ["d3d8", "e8d8", "d2g5", "d8c7", "g5d8"],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "mate",
+        "mate": 2
+      },
+      "best": "e8d8",
+      "pv": ["e8d8", "d2g5", "d8c7", "g5d8"],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "mate",
+        "mate": 2
+      },
+      "best": "d2g5",
+      "pv": ["d2g5", "d8c7", "g5d8"],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "mate",
+        "mate": 1
+      },
+      "best": "d8c7",
+      "pv": ["d8c7", "g5d8"],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "mate",
+        "mate": 1
+      },
+      "best": "g5d8",
+      "pv": ["g5d8"],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "result",
+        "result": "1-0"
+      },
+      "best": null,
+      "pv": [],
+      "depth": 0
+    }
+  ]
+}

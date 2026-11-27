@@ -15,6 +15,6 @@ test("the wasm file is served as application/wasm", async ({ request }) => {
 
 test("the home page links to the engine test", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "Probar el motor" }).click();
+  await page.getByRole("link", { name: "Diagnóstico del motor" }).click();
   await expect(page).toHaveURL(/\/dev\/engine$/);
 });

@@ -13,13 +13,20 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "postinstall": "node scripts/copy-engine.mjs"
+    "postinstall": "node scripts/copy-engine.mjs",
+    "golden:record": "tsx scripts/record-golden.mts record",
+    "golden:expected": "tsx scripts/record-golden.mts expected",
+    "bench": "node scripts/bench.mjs"
   },
   "dependencies": {
+    "chess.js": "1.4.0",
+    "lz-string": "1.5.0",
     "next": "16.4.6",
     "react": "19.3.0",
+    "react-chessboard": "5.12.4",
     "react-dom": "19.3.0",
-    "stockfish": "19.0.1"
+    "stockfish": "19.0.1",
+    "zustand": "^5.1.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
@@ -32,6 +39,7 @@
     "eslint-config-prettier": "^10.1.9",
     "prettier": "^3.10.1",
     "tailwindcss": "4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.1.2"
   },

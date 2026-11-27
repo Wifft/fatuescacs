@@ -1,0 +1,6 @@
+[Event "Casual"]
+[White "Aficionado A"]
+[Black "Aficionado B"]
+[Result "*"]
+
+1. e4 Nf6 2. e5 d5 3. exd6 {al paso} Nc6 4. dxc7 Nd5 5. cxd8=Q+ (5. Nf3 Qxc7) 5... Kxd8 $2 6. Nf3 *

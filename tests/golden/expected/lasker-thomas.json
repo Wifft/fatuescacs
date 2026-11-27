@@ -1,0 +1,43 @@
+{
+  "moves": [
+    "1. d4 good 0.0",
+    "1... e6 good 0.7",
+    "2. Nf3 good 1.4",
+    "2... f5 good 2.8",
+    "3. Nc3 good 3.6",
+    "3... Nf6 best 0.0",
+    "4. Bg5 best 0.4",
+    "4... Be7 inaccuracy 5.3",
+    "5. Bxf6 best 0.0",
+    "5... Bxf6 best 0.0",
+    "6. e4 best 0.0",
+    "6... fxe4 good 0.0",
+    "7. Nxe4 best 0.0",
+    "7... b6 good 2.1",
+    "8. Ne5 good 4.4",
+    "8... O-O best 0.0",
+    "9. Bd3 mistake 13.4",
+    "9... Bb7 mistake 13.6",
+    "10. Qh5 good 2.9",
+    "10... Qe7 blunder 47.5",
+    "11. Qxh7+ best 0.0",
+    "11... Kxh7 forced 0.0",
+    "12. Nxf6+ best 0.0",
+    "12... Kh6 best 0.0",
+    "13. Neg4+ best 0.0",
+    "13... Kg5 forced 0.0",
+    "14. h4+ best 0.0",
+    "14... Kf4 forced 0.0",
+    "15. g3+ good 0.0",
+    "15... Kf3 forced 0.0",
+    "16. Be2+ good 0.0",
+    "16... Kg2 forced 0.0",
+    "17. Rh2+ best 0.0",
+    "17... Kg1 forced 0.0",
+    "18. Kd2# best 0.0"
+  ],
+  "accuracy": {
+    "w": 90.4,
+    "b": 50.5
+  }
+}

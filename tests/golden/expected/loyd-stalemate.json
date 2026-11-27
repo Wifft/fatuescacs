@@ -1,0 +1,27 @@
+{
+  "moves": [
+    "1. e3 good 1.1",
+    "1... a5 good 2.4",
+    "2. Qh5 inaccuracy 7.9",
+    "2... Ra6 blunder 27.1",
+    "3. Qxa5 blunder 67.7",
+    "3... h5 blunder 70.8",
+    "4. h4 blunder 69.0",
+    "4... Rah6 blunder 61.2",
+    "5. Qxc7 blunder 57.9",
+    "5... f6 blunder 84.9",
+    "6. Qxd7+ blunder 84.6",
+    "6... Kf7 blunder 87.2",
+    "7. Qxb7 blunder 88.2",
+    "7... Qd3 blunder 88.2",
+    "8. Qxb8 good 0.0",
+    "8... Qh7 good 0.0",
+    "9. Qxc8 best 0.0",
+    "9... Kg6 blunder 2.5",
+    "10. Qe6 blunder 50.0"
+  ],
+  "accuracy": {
+    "w": 5.7,
+    "b": 5.7
+  }
+}

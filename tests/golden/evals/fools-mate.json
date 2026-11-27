@@ -1,0 +1,119 @@
+{
+  "engine": "Stockfish 19 Lite WASM",
+  "depth": 16,
+  "fens": [
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    "rnbqkbnr/pppppppp/8/8/8/5P2/PPPPP1PP/RNBQKBNR b KQkq - 0 1",
+    "rnbqkbnr/pppp1ppp/8/4p3/8/5P2/PPPPP1PP/RNBQKBNR w KQkq - 0 2",
+    "rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2",
+    "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3"
+  ],
+  "evals": [
+    {
+      "score": {
+        "kind": "cp",
+        "cp": 25
+      },
+      "best": "e2e4",
+      "pv": [
+        "e2e4",
+        "e7e5",
+        "g1f3",
+        "b8c6",
+        "d2d4",
+        "e5d4",
+        "f3d4",
+        "g8f6",
+        "b1c3",
+        "f8b4",
+        "d4c6",
+        "b7c6",
+        "f1d3",
+        "d7d5",
+        "e4d5",
+        "c6d5"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": -65
+      },
+      "best": "e7e5",
+      "pv": [
+        "e7e5",
+        "e2e4",
+        "d7d5",
+        "d2d4",
+        "d5e4",
+        "d4e5",
+        "d8d1",
+        "e1d1",
+        "b8c6",
+        "f3e4",
+        "c6e5",
+        "g1f3",
+        "e5g4",
+        "d1e1",
+        "f8c5",
+        "f1b5",
+        "c7c6",
+        "b5d3",
+        "g8f6"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "cp",
+        "cp": -65
+      },
+      "best": "e2e4",
+      "pv": [
+        "e2e4",
+        "d7d5",
+        "d2d4",
+        "d5e4",
+        "d4e5",
+        "d8d1",
+        "e1d1",
+        "b8c6",
+        "f3e4",
+        "c6e5",
+        "g1f3",
+        "e5g4",
+        "d1e1",
+        "f8d6",
+        "b1c3",
+        "g8f6",
+        "f1b5",
+        "c7c6",
+        "b5d3",
+        "c8e6",
+        "h2h3",
+        "g4e5",
+        "f3e5"
+      ],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "mate",
+        "mate": -1
+      },
+      "best": "d8h4",
+      "pv": ["d8h4"],
+      "depth": 16
+    },
+    {
+      "score": {
+        "kind": "result",
+        "result": "0-1"
+      },
+      "best": null,
+      "pv": [],
+      "depth": 0
+    }
+  ]
+}
