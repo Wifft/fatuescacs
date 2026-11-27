@@ -18,6 +18,7 @@ import { decodePgnHash } from "@/lib/share";
 import { messages, pgnErrorMessage } from "@/messages/es";
 import { DEPTH_OPTIONS, hydratePreferences, useAnalysis } from "@/store/analysis";
 import { cancelAnalysis, runAnalysis } from "@/store/run-analysis";
+import { openingNameEs } from "@/lib/chess/opening-names-es";
 
 const t = messages.analysis;
 
@@ -111,7 +112,7 @@ export function AnalysisView() {
               table load, and must not push the board down (CLS). */}
           <p className="min-h-[1.5em] truncate text-[15px] text-muted">{sub}</p>
           <p className="min-h-[1.5em] truncate text-[15px] text-muted" data-testid="opening">
-            {opening ? `${opening.eco} · ${opening.name}` : ""}
+            {opening ? `${opening.eco} · ${openingNameEs(opening.name)}` : ""}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

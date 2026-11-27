@@ -11,6 +11,7 @@ import { messages } from "@/messages/es";
 import { useAnalysis } from "@/store/analysis";
 import { getEvalCache } from "@/store/run-analysis";
 import { useSession } from "@/store/session";
+import { openingNameEs } from "@/lib/chess/opening-names-es";
 
 const t = messages.history;
 const dateFmt = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" });
@@ -116,7 +117,7 @@ export function HistoryView() {
             </p>
             {a.opening && (
               <p className="truncate text-sm text-muted">
-                {a.opening.eco} · {a.opening.name}
+                {a.opening.eco} · {openingNameEs(a.opening.name)}
               </p>
             )}
             <p className="text-sm text-muted">

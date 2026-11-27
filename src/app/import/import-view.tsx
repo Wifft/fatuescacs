@@ -12,6 +12,7 @@ import { importLichess } from "@/lib/import/lichess";
 import { userOutcome, type ImportedGame, type ImportSource } from "@/lib/import/types";
 import { analysisHref } from "@/lib/share";
 import { messages } from "@/messages/es";
+import { openingNameEs } from "@/lib/chess/opening-names-es";
 
 const t = messages.importPage;
 const PREF_KEY = "import-last";
@@ -27,12 +28,15 @@ function openingOf(g: ImportedGame, table: OpeningTable | null): string | null {
   if (table) {
     try {
       const o = identifyOpening(parsePgn(g.pgn).fens, table).opening;
-      if (o) return `${o.eco} · ${o.name}`;
+      if (o) return `${o.eco} · ${openingNameEs(o.name)}`;
     } catch {
       /* fall back to the site's opening */
     }
   }
-  return g.siteOpening ? [g.siteOpening.eco, g.siteOpening.name].filter(Boolean).join(" · ") : null;
+  if (!g.siteOpening) return null;
+  // Lichess uses the same canonical names as our table; Chess.com's come from a URL slug.
+  const name = g.source === "lichess" ? openingNameEs(g.siteOpening.name) : g.siteOpening.name;
+  return [g.siteOpening.eco, name].filter(Boolean).join(" · ");
 }
 
 const dateFmt = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" });
