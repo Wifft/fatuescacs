@@ -15,7 +15,8 @@
     "test:e2e": "playwright test",
     "postinstall": "node scripts/copy-engine.mjs",
     "golden:record": "tsx scripts/record-golden.mts record",
-    "golden:expected": "tsx scripts/record-golden.mts expected"
+    "golden:expected": "tsx scripts/record-golden.mts expected",
+    "bench": "node scripts/bench.mjs"
   },
   "dependencies": {
     "chess.js": "1.4.0",
