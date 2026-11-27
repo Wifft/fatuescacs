@@ -53,6 +53,30 @@ Analizador de partidas de ajedrez en el navegador. La especificación completa (
   - Análisis guardados: el servidor valida y **recalcula** el resumen con `buildReport`; hay uno por usuario y PGN (upsert).
 - **e2e:** `DB_PATH=.e2e/e2e.db`. `tests/e2e/helpers.ts` bloquea toda petición fuera de localhost, y las APIs externas se simulan con `page.route`.
 
+## Fase 3: explicaciones, entrenamiento, estadísticas
+
+- **Explicaciones automáticas, sin IA** (`lib/chess/explain.ts`; decisión del usuario, 2026-11-27: de momento no se usa la API de Anthropic).
+  - Función pura que devuelve datos estructurados; el texto está en `explanationText` de `messages/es.ts`.
+  - Solo describe líneas del motor. Por prioridad:
+    1. `allows-mate`;
+    2. `lost-mate`;
+    3. `hanging`: la primera respuesta del rival gana una pieza de 3 o más. Se redacta como «el rival se lleva tu X», porque la pieza podía estar atacada ya antes de la jugada;
+    4. `loses-material`;
+    5. `missed-tactic`;
+    6. `eval-swing`.
+  - El material se mide con `forcingLine`: se rejuega la línea mientras haya capturas, jaques o coronaciones (máx. 6 jugadas), y por debajo de 2 peones no se considera pérdida de material.
+- **Color del usuario:** al guardar se elige blancas, negras o «no jugué» (migración 2, `analyses.user_color`). Se preselecciona si el nombre coincide con el último usuario importado (`localStorage["import-last"]`). Sin color no hay ejercicios ni estadísticas.
+- **Ejercicios** (`server/drills.ts`, tabla `drills`):
+  - salen de los errores y errores graves del usuario y se sincronizan al guardar: los nuevos quedan pendientes ya, y los existentes conservan su caja;
+  - sistema Leitner con cajas 1–5 e intervalos de 1/3/7/14/30 días; un fallo vuelve a la caja 1;
+  - corrección en el navegador (`lib/chess/drill-check.ts`): la jugada del motor vale siempre, y otra vale si pierde menos de 5 puntos según el motor a prof. 14.
+- **Estadísticas** (`lib/chess/stats.ts`, `GET /api/stats`):
+  - fase por material sin peones (D 9, T 5, A/C 3; 62 al inicio): apertura con menos de 20 jugadas y 52 o más, final con 26 o menos, medio juego el resto;
+  - la precisión por fase es la media simple de la precisión por jugada;
+  - las aperturas se ordenan de peor a mejor (puntos y luego precisión);
+  - los errores se agrupan por tipo de explicación, por fase y por pieza.
+- **e2e:** para arrastrar piezas en react-chessboard (dnd-kit) hay que mover el ratón en varios pasos (`page.mouse`); `dragTo` no basta. Las casillas llevan `data-square`. `registerUser` está en `tests/e2e/helpers.ts`: no importar entre specs.
+
 ## Motor
 
 - Build principal: `/engine/stockfish-19-lite-single.js` (+ `.wasm`, 1,8 MB / 1,2 MB gzip). Fallback: `/engine/stockfish-19-asm.js` (modo lento).

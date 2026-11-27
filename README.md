@@ -2,7 +2,7 @@
 
 Aplicación web que analiza tus partidas de ajedrez con Stockfish y te explica dónde te equivocaste. El motor corre **en tu navegador** (WebAssembly en un Web Worker): el servidor nunca analiza nada y tus partidas no salen de tu equipo.
 
-> Estado: **fase 2 (importación, aperturas e historial)**. Analiza un PGN o importa tus partidas de Lichess y Chess.com, identifica la apertura y guarda tus análisis en una cuenta (opcional). La prueba de concepto original está en [`poc/index.html`](poc/index.html).
+> Estado: **fase 3**. Analiza un PGN o importa tus partidas de Lichess y Chess.com, con la apertura identificada y una explicación automática de cada error basada en las líneas del motor. Con cuenta (opcional), guarda tus análisis, entrena con tus propios errores (repetición espaciada) y consulta tus estadísticas. La prueba de concepto original está en [`poc/index.html`](poc/index.html).
 
 ## Requisitos
 
