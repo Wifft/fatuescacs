@@ -40,6 +40,8 @@ export interface Classification {
   loss: number;
   winBefore: number;
   winAfter: number;
+  /** Mate-related explanation shown to the user, when one applies. */
+  reason?: "allows-mate" | "lost-mate";
 }
 
 // Severity order used for "at most" / "at least" / "downgrade".
@@ -94,5 +96,6 @@ export function classifyMove(
   if (lostMate) cls = atLeast(cls, "mistake");
   if (allowsMate) cls = "blunder";
 
-  return result(cls);
+  const reason = allowsMate ? "allows-mate" : lostMate ? "lost-mate" : undefined;
+  return reason ? { ...result(cls), reason } : result(cls);
 }
