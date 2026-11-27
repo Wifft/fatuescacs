@@ -6,6 +6,8 @@ export default defineConfig({
   testDir: "tests/e2e",
   timeout: 60_000,
   fullyParallel: true,
+  // Every analysis runs a real engine: cap parallelism so tests don't starve each other.
+  workers: process.env.CI ? 1 : 4,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
