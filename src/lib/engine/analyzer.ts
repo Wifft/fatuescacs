@@ -49,6 +49,8 @@ export interface AnalyzeOptions {
   /** Called every time a position gets a (better) evaluation. */
   onEval?: (index: number, evaluation: PositionEval, phase: Exclude<AnalysisPhase, "done">) => void;
   onProgress?: (p: AnalysisProgress) => void;
+  /** Run the quick depth-10 pass first (default true). */
+  quickPass?: boolean;
   now?: () => number;
 }
 
@@ -62,7 +64,7 @@ export async function analyzeGame(opts: AnalyzeOptions): Promise<AnalysisMetrics
   const t0 = now();
   const total = fens.length;
   const passes: { phase: "quick" | "full"; depth: number }[] =
-    depth > QUICK_DEPTH
+    depth > QUICK_DEPTH && opts.quickPass !== false
       ? [
           { phase: "quick", depth: QUICK_DEPTH },
           { phase: "full", depth },
