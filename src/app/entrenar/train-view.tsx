@@ -2,14 +2,15 @@
 
 import { Chess } from "chess.js";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Chessboard } from "react-chessboard";
+import { usePieceLabels } from "@/components/board/use-piece-labels";
 import { Button } from "@/components/ui";
 import { api, type ApiDrill } from "@/lib/api-client";
 import { DRILL_CHECK_DEPTH, gradeAnswer, type DrillVerdict } from "@/lib/chess/drill-check";
 import { terminalScore } from "@/lib/chess/eval";
 import { fenAfterUci, numberLine, uciLineToSan } from "@/lib/chess/line";
-import { displaySan } from "@/lib/chess/notation";
+import { displaySan, parseUserSan } from "@/lib/chess/notation";
 import { getBrowserEngine } from "@/lib/engine/browser";
 import { messages } from "@/messages/es";
 import { hydratePreferences, useAnalysis } from "@/store/analysis";
@@ -34,6 +35,10 @@ export function TrainView() {
   const [load, setLoad] = useState<Load>({ status: "loading" });
   const [index, setIndex] = useState(0);
   const [answer, setAnswer] = useState<Answer>({ status: "waiting" });
+  const [typed, setTyped] = useState("");
+  const [typedError, setTypedError] = useState(false);
+  const boardRef = useRef<HTMLDivElement>(null);
+  const ids = { input: useId(), help: useId() };
 
   useEffect(() => {
     hydratePreferences();
@@ -55,6 +60,7 @@ export function TrainView() {
   }, [sessionStatus, user]);
 
   const drill = load.status === "ready" ? load.drills[index] : undefined;
+  usePieceLabels(boardRef, "training-board", `${drill?.id}-${answer.status}`);
   const color = drill?.fen.split(" ")[1] === "b" ? "b" : "w";
   const san = useCallback(
     (fen: string, uci: readonly string[], n = 5) =>
@@ -158,7 +164,7 @@ export function TrainView() {
   if (load.status === "loading") return <p className="mt-6 text-muted">{t.loading}</p>;
   if (load.status === "error") {
     return (
-      <p role="alert" className="mt-6 text-[var(--c-blunder)]">
+      <p role="alert" className="mt-6 text-[var(--c-blunder-text)]">
         {t.error}
       </p>
     );
@@ -188,6 +194,9 @@ export function TrainView() {
       data-testid="drill"
     >
       <div
+        ref={boardRef}
+        role="group"
+        aria-label={t.boardLabel(color === "w" ? t.white : t.black)}
         className="overflow-hidden rounded shadow-[0_8px_28px_rgba(60,40,20,0.18)]"
         data-testid="train-board"
         data-fen={drill.fen}
@@ -218,7 +227,9 @@ export function TrainView() {
           >
             <p
               className="text-lg font-bold"
-              style={{ color: answer.verdict === "wrong" ? "var(--c-blunder)" : "var(--c-good)" }}
+              style={{
+                color: answer.verdict === "wrong" ? "var(--c-blunder-text)" : "var(--c-good-text)",
+              }}
             >
               {answer.verdict === "best"
                 ? t.correct
@@ -253,11 +264,61 @@ export function TrainView() {
         )}
 
         {answer.status === "waiting" && (
-          <div>
-            <Button onClick={() => void finish(null, "wrong", 100)} data-testid="train-give-up">
-              {t.showSolution}
-            </Button>
-          </div>
+          <>
+            <form
+              className="grid gap-1"
+              onSubmit={(e) => {
+                e.preventDefault();
+                let move;
+                try {
+                  move = new Chess(drill.fen).move(parseUserSan(typed, notation));
+                } catch {
+                  setTypedError(true);
+                  return;
+                }
+                setTypedError(false);
+                setTyped("");
+                void check(move.from + move.to + (move.promotion ?? ""));
+              }}
+            >
+              <label htmlFor={ids.input} className="text-sm font-medium">
+                {t.typeMove}
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id={ids.input}
+                  value={typed}
+                  onChange={(e) => {
+                    setTyped(e.target.value);
+                    setTypedError(false);
+                  }}
+                  autoComplete="off"
+                  spellCheck={false}
+                  aria-describedby={ids.help}
+                  aria-invalid={typedError || undefined}
+                  className="min-h-11 w-32 rounded-lg border border-line bg-soft px-3 font-mono"
+                  data-testid="train-input"
+                />
+                <Button type="submit" disabled={!typed.trim()}>
+                  {t.submitMove}
+                </Button>
+              </div>
+              <p id={ids.help} className="text-xs text-muted">
+                {typedError ? (
+                  <span role="alert" className="text-[var(--c-blunder-text)]">
+                    {t.illegalMove}
+                  </span>
+                ) : (
+                  t.typeMoveHelp(notation === "es" ? "Cf3, Dxd7+, O-O" : "Nf3, Qxd7+, O-O")
+                )}
+              </p>
+            </form>
+            <div>
+              <Button onClick={() => void finish(null, "wrong", 100)} data-testid="train-give-up">
+                {t.showSolution}
+              </Button>
+            </div>
+          </>
         )}
       </div>
     </section>

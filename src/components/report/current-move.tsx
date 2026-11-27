@@ -7,7 +7,7 @@ import { displaySan, type Notation } from "@/lib/chess/notation";
 import { explanationText, messages } from "@/messages/es";
 import { useAnalysis } from "@/store/analysis";
 import { useReport } from "@/store/use-report";
-import { classColor } from "../ui";
+import { classColor, classTextColor } from "../ui";
 
 const t = messages.analysis;
 
@@ -92,7 +92,7 @@ export function CurrentMove() {
       </h2>
       {c && (
         <p>
-          <b style={{ color: classColor(c.cls) }} data-testid="current-class">
+          <b style={{ color: classTextColor(c.cls) }} data-testid="current-class">
             {messages.classes[c.cls].label}
           </b>
           {c.reason && <span> · {t.reasons[c.reason]}</span>}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 import { Button } from "@/components/ui";
+import { useHydrated } from "@/components/use-hydrated";
 import { identifyOpening, loadOpeningTable, type OpeningTable } from "@/lib/chess/openings";
 import { parsePgn } from "@/lib/chess/pgn";
 import { importChesscom } from "@/lib/import/chesscom";
@@ -41,6 +42,7 @@ export function ImportView() {
   const [username, setUsername] = useState("");
   const [state, setState] = useState<State>({ status: "idle" });
   const [table, setTable] = useState<OpeningTable | null>(null);
+  const hydrated = useHydrated();
   const ids = { user: useId(), err: useId() };
 
   useEffect(() => {
@@ -83,50 +85,52 @@ export function ImportView() {
   return (
     <>
       <form onSubmit={submit} className="mt-6 flex flex-wrap items-end gap-3" noValidate>
-        <fieldset className="flex gap-2">
-          <legend className="mb-1 text-sm text-muted">{t.source}</legend>
-          {(["lichess", "chesscom"] as const).map((s) => (
-            <label
-              key={s}
-              className={`inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3 ${
-                source === s ? "border-foreground" : "border-line bg-soft"
-              }`}
-            >
-              <input
-                type="radio"
-                name="source"
-                value={s}
-                checked={source === s}
-                onChange={() => setSource(s)}
-              />
-              {t[s]}
+        <fieldset disabled={!hydrated} className="contents">
+          <fieldset className="flex gap-2">
+            <legend className="mb-1 text-sm text-muted">{t.source}</legend>
+            {(["lichess", "chesscom"] as const).map((s) => (
+              <label
+                key={s}
+                className={`inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3 ${
+                  source === s ? "border-foreground" : "border-line bg-soft"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="source"
+                  value={s}
+                  checked={source === s}
+                  onChange={() => setSource(s)}
+                />
+                {t[s]}
+              </label>
+            ))}
+          </fieldset>
+          <div className="grid gap-1">
+            <label htmlFor={ids.user} className="text-sm text-muted">
+              {t.username}
             </label>
-          ))}
+            <input
+              id={ids.user}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+              required
+              aria-describedby={state.status === "error" ? ids.err : undefined}
+              className="min-h-11 rounded-lg border border-line bg-soft px-3"
+              data-testid="import-username"
+            />
+          </div>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={state.status === "loading" || !username.trim()}
+            data-testid="import-submit"
+          >
+            {state.status === "loading" ? t.loading : t.submit}
+          </Button>
         </fieldset>
-        <div className="grid gap-1">
-          <label htmlFor={ids.user} className="text-sm text-muted">
-            {t.username}
-          </label>
-          <input
-            id={ids.user}
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="off"
-            spellCheck={false}
-            required
-            aria-describedby={state.status === "error" ? ids.err : undefined}
-            className="min-h-11 rounded-lg border border-line bg-soft px-3"
-            data-testid="import-username"
-          />
-        </div>
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={state.status === "loading" || !username.trim()}
-          data-testid="import-submit"
-        >
-          {state.status === "loading" ? t.loading : t.submit}
-        </Button>
       </form>
       <p className="mt-2 text-sm text-muted">{t.variantsNote}</p>
 
@@ -134,7 +138,7 @@ export function ImportView() {
         <p
           id={ids.err}
           role="alert"
-          className="mt-4 text-[var(--c-blunder)]"
+          className="mt-4 text-[var(--c-blunder-text)]"
           data-testid="import-error"
         >
           {state.message}
@@ -173,7 +177,11 @@ function GameRow({ game: g, opening }: { game: ImportedGame; opening: string | n
           ? t.draw
           : t.unfinished;
   const outcomeColor =
-    outcome === "win" ? "var(--c-good)" : outcome === "loss" ? "var(--c-blunder)" : "var(--muted)";
+    outcome === "win"
+      ? "var(--c-good-text)"
+      : outcome === "loss"
+        ? "var(--c-blunder-text)"
+        : "var(--muted)";
   return (
     <li
       className="flex flex-wrap items-center gap-x-4 gap-y-1 px-3.5 py-3"

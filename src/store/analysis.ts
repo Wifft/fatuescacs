@@ -39,6 +39,8 @@ export interface AnalysisState {
   setGame(game: ParsedGame, pgn?: string): void;
   setOpening(game: ParsedGame, info: OpeningInfo): void;
   setEval(index: number, e: PositionEval): void;
+  /** Applies several evaluations in one update (one re-render). */
+  setEvals(updates: readonly (readonly [number, PositionEval])[]): void;
   goTo(ply: number): void;
   step(delta: number): void;
   flip(): void;
@@ -101,6 +103,13 @@ export const useAnalysis = create<AnalysisState>()((set, get) => ({
     // Ignore late results for a game that is no longer shown.
     if (get().game === game) set({ opening });
   },
+  setEvals: (updates) =>
+    set((s) => {
+      if (updates.length === 0) return s;
+      const evals = s.evals.slice();
+      for (const [i, e] of updates) if (i >= 0 && i < evals.length) evals[i] = e;
+      return { evals };
+    }),
   setEval: (index, e) =>
     set((s) => {
       if (index < 0 || index >= s.evals.length) return s;

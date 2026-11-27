@@ -81,7 +81,7 @@ export function StatsView() {
   if (load.status === "loading") return <p className="mt-6 text-muted">{t.loading}</p>;
   if (load.status === "error") {
     return (
-      <p role="alert" className="mt-6 text-[var(--c-blunder)]">
+      <p role="alert" className="mt-6 text-[var(--c-blunder-text)]">
         {t.error}
       </p>
     );

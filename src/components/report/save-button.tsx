@@ -122,7 +122,7 @@ export function SaveButton() {
           {state === "saving" ? t.saving : state === "saved" ? t.saved : t.save}
         </Button>
         {state === "error" && (
-          <span role="alert" className="text-sm text-[var(--c-blunder)]">
+          <span role="alert" className="text-sm text-[var(--c-blunder-text)]">
             {t.error}
           </span>
         )}

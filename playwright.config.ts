@@ -5,13 +5,20 @@ const PORT = 3100;
 export default defineConfig({
   testDir: "tests/e2e",
   timeout: 60_000,
+  // Engines run in parallel workers and load the CPU: give UI assertions a bit more room.
+  expect: { timeout: 10_000 },
   fullyParallel: true,
+  // Every analysis runs a real engine: cap parallelism so tests don't starve each other.
+  workers: process.env.CI ? 1 : 4,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: "retain-on-failure",
+    // Requests made by a service worker bypass page.route(), so it is off by default and
+    // enabled only in tests/e2e/pwa.spec.ts.
+    serviceWorkers: "block",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {

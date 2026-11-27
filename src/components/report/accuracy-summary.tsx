@@ -34,11 +34,11 @@ export function AccuracySummary() {
           </strong>{" "}
           <em className="text-[13px] text-muted not-italic">% {t.accuracy}</em>
           <dl className="mt-1 grid grid-cols-[auto_1fr] gap-x-2 text-[13px] text-muted">
-            <dt style={{ color: "var(--c-inaccuracy)" }}>?!</dt>
+            <dt style={{ color: "var(--c-inaccuracy-text)" }}>?!</dt>
             <dd>{t.inaccuracies(counts[color].inaccuracy)}</dd>
-            <dt style={{ color: "var(--c-mistake)" }}>?</dt>
+            <dt style={{ color: "var(--c-mistake-text)" }}>?</dt>
             <dd>{t.mistakes(counts[color].mistake)}</dd>
-            <dt style={{ color: "var(--c-blunder)" }}>??</dt>
+            <dt style={{ color: "var(--c-blunder-text)" }}>??</dt>
             <dd>{t.blunders(counts[color].blunder)}</dd>
           </dl>
         </div>

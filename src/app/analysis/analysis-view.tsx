@@ -7,9 +7,10 @@ import { MoveList } from "@/components/moves/move-list";
 import { AccuracySummary } from "@/components/report/accuracy-summary";
 import { AnalysisProgress, Diagnostics } from "@/components/report/analysis-progress";
 import { CurrentMove } from "@/components/report/current-move";
+import { ExportButtons } from "@/components/report/export-buttons";
 import { SaveButton } from "@/components/report/save-button";
 import { ClassLegend, EvalGraph } from "@/components/report/eval-graph";
-import { Button, Select } from "@/components/ui";
+import { Select } from "@/components/ui";
 import type { Notation } from "@/lib/chess/notation";
 import { identifyOpening, loadOpeningTable } from "@/lib/chess/openings";
 import { parsePgn, PgnError } from "@/lib/chess/pgn";
@@ -47,7 +48,6 @@ export function AnalysisView() {
   const opening = useAnalysis((s) => s.opening?.opening);
   const notation = useAnalysis((s) => s.notation);
   const depth = useAnalysis((s) => s.depth);
-  const [copied, setCopied] = useState(false);
   const ids = { notation: useId(), depth: useId() };
 
   useEffect(() => {
@@ -107,12 +107,12 @@ export function AnalysisView() {
       <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-2xl leading-tight font-bold text-balance sm:text-3xl">{title}</h1>
-          {sub && <p className="text-[15px] text-muted">{sub}</p>}
-          {opening && (
-            <p className="text-[15px] text-muted" data-testid="opening">
-              {opening.eco} · {opening.name}
-            </p>
-          )}
+          {/* Both lines always take their space: they fill in after the PGN and the opening
+              table load, and must not push the board down (CLS). */}
+          <p className="min-h-[1.5em] truncate text-[15px] text-muted">{sub}</p>
+          <p className="min-h-[1.5em] truncate text-[15px] text-muted" data-testid="opening">
+            {opening ? `${opening.eco} · ${opening.name}` : ""}
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link
@@ -121,19 +121,7 @@ export function AnalysisView() {
           >
             {t.back}
           </Link>
-          <Button
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(window.location.href);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              } catch {
-                /* clipboard unavailable */
-              }
-            }}
-          >
-            {copied ? t.copied : t.copyLink}
-          </Button>
+          <ExportButtons />
         </div>
       </header>
 

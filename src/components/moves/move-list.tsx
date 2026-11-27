@@ -5,7 +5,7 @@ import { displaySan } from "@/lib/chess/notation";
 import { messages } from "@/messages/es";
 import { useAnalysis } from "@/store/analysis";
 import { useReport } from "@/store/use-report";
-import { classColor } from "../ui";
+import { classColor, classTextColor } from "../ui";
 
 export function MoveList() {
   const game = useAnalysis((s) => s.game);
@@ -59,7 +59,7 @@ export function MoveList() {
         {info?.symbol && (
           <b
             className="text-[13px]"
-            style={{ color: selected ? "inherit" : classColor(c?.cls) }}
+            style={{ color: selected ? "inherit" : classTextColor(c?.cls) }}
             aria-hidden
           >
             {info.symbol}

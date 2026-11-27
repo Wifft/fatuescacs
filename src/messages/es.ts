@@ -2,6 +2,7 @@
 import type { PieceSymbol } from "chess.js";
 import type { MoveClass } from "@/lib/chess/classify";
 import type { Score } from "@/lib/chess/eval";
+import { DESCRIBE_ORDER, type PositionDescription } from "@/lib/chess/describe";
 import type { Explanation, PieceCounts } from "@/lib/chess/explain";
 import type { PgnError } from "@/lib/chess/pgn";
 
@@ -18,6 +19,7 @@ export const messages = {
     history: "Historial",
     train: "Entrenar",
     stats: "Estadísticas",
+    about: "Acerca de",
     account: "Cuenta",
   },
   importPage: {
@@ -147,6 +149,12 @@ export const messages = {
     lossNote: (n: number) => `Tu jugada pierde ${n} puntos de probabilidad de ganar.`,
     next: "Siguiente",
     showSolution: "Ver solución",
+    typeMove: "O escribe tu jugada",
+    typeMoveHelp: (example: string) => `En notación algebraica, por ejemplo ${example}.`,
+    submitMove: "Comprobar",
+    illegalMove: "Esa jugada no es legal en esta posición.",
+    boardLabel: (side: string) =>
+      `Tablero del ejercicio; juegan ${side}. Puedes mover piezas arrastrándolas o con el teclado.`,
     box: (n: number) => `Caja ${n} de 5`,
     error: "No se pudieron cargar los ejercicios.",
     loading: "Cargando…",
@@ -188,6 +196,75 @@ export const messages = {
       "eval-swing": "Errores posicionales",
     },
     pieces: { k: "Rey", q: "Dama", r: "Torre", b: "Alfil", n: "Caballo", p: "Peón" },
+  },
+  pwa: {
+    offline:
+      "Sin conexión. Puedes seguir analizando partidas; importar, la cuenta y el historial necesitan red.",
+  },
+  exportReport: {
+    share: "Compartir",
+    download: "Descargar imagen",
+    waitAnalysis: "Espera a que termine el análisis",
+    error: "No se pudo exportar.",
+    counts: (i: number, m: number, b: number) =>
+      [
+        `${i} ${i === 1 ? "imprecisión" : "imprecisiones"}`,
+        `${m} ${m === 1 ? "error" : "errores"}`,
+        `${b} ${b === 1 ? "error grave" : "errores graves"}`,
+      ].join(" · "),
+    footer: (host: string) => `Analizado con Stockfish en el navegador · ${host}`,
+  },
+  about: {
+    title: "Acerca de",
+    intro:
+      "Un analizador de partidas de ajedrez gratuito y de código abierto: analiza tus partidas con Stockfish dentro de tu navegador y te explica dónde te equivocaste.",
+    privacyTitle: "Privacidad",
+    privacy: [
+      "El motor de ajedrez se ejecuta en tu dispositivo. El servidor nunca analiza tus partidas.",
+      "Sin cuenta no guardamos nada: el borrador del PGN, tus preferencias y la caché de análisis viven solo en tu navegador.",
+      "Con cuenta guardamos tu nombre de usuario, un hash de tu contraseña (scrypt) y los análisis que tú decidas guardar. No pedimos email.",
+      "Al importar partidas, tu navegador consulta directamente las APIs públicas de Lichess o Chess.com.",
+    ],
+    licenseTitle: "Licencia",
+    license:
+      "Este programa es software libre: puedes redistribuirlo y modificarlo bajo los términos de la Licencia Pública General de GNU, versión 3 (GPL-3.0).",
+    source: "Código fuente",
+    creditsTitle: "Créditos",
+    credits: [
+      [
+        "Stockfish",
+        "https://stockfishchess.org/",
+        "Motor de ajedrez. © Los desarrolladores de Stockfish. GPL-3.0.",
+      ],
+      [
+        "stockfish.js",
+        "https://github.com/nmrugg/stockfish.js",
+        "Stockfish en WebAssembly, de Nathan Rugg y Chess.com. GPL-3.0. Se distribuye sin modificar.",
+      ],
+      [
+        "lichess-org/chess-openings",
+        "https://github.com/lichess-org/chess-openings",
+        "Nombres y códigos ECO de las aperturas. CC0-1.0.",
+      ],
+      ["chess.js", "https://github.com/jhlywa/chess.js", "Reglas del ajedrez y PGN. BSD-2-Clause."],
+      ["react-chessboard", "https://github.com/Clariity/react-chessboard", "Tablero. MIT."],
+      [
+        "Lichess",
+        "https://lichess.org/",
+        "Fórmula de probabilidad de victoria y método de precisión, adaptados de su código abierto (AGPL); API pública de partidas.",
+      ],
+      [
+        "Chess.com",
+        "https://www.chess.com/news/view/published-data-api",
+        "API pública de partidas.",
+      ],
+    ] as [string, string, string][],
+    depsTitle: "Dependencias de producción",
+    depsIntro: (n: number) =>
+      `${n} paquetes, generados automáticamente con pnpm licenses en cada build.`,
+    depName: "Paquete",
+    depVersion: "Versión",
+    depLicense: "Licencia",
   },
   home: {
     pgnLabel: "Partida en PGN",
@@ -237,6 +314,7 @@ export const messages = {
     },
     engineLine: "Línea del motor",
     explanation: "Explicación",
+    describe: "Descripción de la posición",
     evaluation: "Evaluación",
     depthShort: "prof.",
     pending: "Pendiente de análisis…",
@@ -368,4 +446,43 @@ export function explanationText(
     case "eval-swing":
       return `La evaluación pasa de ${score(e.before)} a ${score(e.after)}; ${line(e.fen, [e.best])} era mejor.`;
   }
+}
+
+const PIECE_NAMES: Record<PieceSymbol, [string, string]> = {
+  k: ["Rey", "Rey"],
+  q: ["Dama", "Damas"],
+  r: ["Torre", "Torres"],
+  b: ["Alfil", "Alfiles"],
+  n: ["Caballo", "Caballos"],
+  p: ["Peón", "Peones"],
+};
+
+const list = (xs: readonly string[]) =>
+  xs.length <= 1 ? (xs[0] ?? "") : `${xs.slice(0, -1).join(", ")} y ${xs.at(-1)}`;
+
+/** "Blancas: Rey en g1; Dama en d1; Torres en a1 y f1; … Juegan negras." */
+export function positionText(d: PositionDescription): string {
+  const side = (c: "w" | "b") => {
+    const parts = DESCRIBE_ORDER.flatMap((p) => {
+      const sq = d[c].pieces[p];
+      if (!sq?.length) return [];
+      const [one, many] = PIECE_NAMES[p];
+      return [`${sq.length === 1 ? one : many} en ${list(sq)}`];
+    });
+    return `${c === "w" ? "Blancas" : "Negras"}: ${parts.join("; ")}.`;
+  };
+  const state = d.checkmate
+    ? `Jaque mate: ganan ${d.turn === "w" ? "negras" : "blancas"}.`
+    : d.stalemate
+      ? "Rey ahogado: tablas."
+      : `Juegan ${d.turn === "w" ? "blancas" : "negras"}${d.check ? ", en jaque" : ""}.`;
+  return `${side("w")} ${side("b")} ${state}`;
+}
+
+/** Accessible name of a piece on the board: "Caballo negro en f6". */
+export function pieceLabel(type: PieceSymbol, color: "w" | "b", square: string): string {
+  const name = PIECE_NAMES[type][0];
+  const fem = type === "q" || type === "r";
+  const colour = color === "w" ? (fem ? "blanca" : "blanco") : fem ? "negra" : "negro";
+  return `${name} ${colour} en ${square}`;
 }

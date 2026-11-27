@@ -24,5 +24,9 @@ export function Select({ className = "", ...props }: SelectHTMLAttributes<HTMLSe
   );
 }
 
-/** CSS variable holding the colour of a move class. */
+/** CSS variable holding the colour of a move class (marks: dots, borders, bars). */
 export const classColor = (cls: string | undefined) => (cls ? `var(--c-${cls})` : "var(--line)");
+
+/** Text-safe (WCAG AA) variant of a move-class colour. */
+export const classTextColor = (cls: string | undefined) =>
+  cls ? `var(--c-${cls}-text)` : "var(--foreground)";

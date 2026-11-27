@@ -14,11 +14,19 @@
   /* move classes */
   --c-best: #2f7de1;
   --c-good: #5c9a48;
-  --c-inaccuracy: #c99700;
+  --c-inaccuracy: #a88000;
   --c-mistake: #e0670f;
   --c-blunder: #d23b2f;
   --c-forced: #8a857d;
   --c-book: #9a6b3f;
+  /* text variants: ≥ 4.5:1 (AA) on --background and --soft */
+  --c-best-text: #1d5fb4;
+  --c-good-text: #3b7329;
+  --c-inaccuracy-text: #7d5f00;
+  --c-mistake-text: #a84a06;
+  --c-blunder-text: #b0281e;
+  --c-forced-text: #625f59;
+  --c-book-text: #7a522c;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -36,6 +44,14 @@
     --c-blunder: #ef5a4c;
     --c-forced: #9d9a93;
     --c-book: #c49163;
+    /* the dark-mode hues already pass AA as text */
+    --c-best-text: var(--c-best);
+    --c-good-text: var(--c-good);
+    --c-inaccuracy-text: var(--c-inaccuracy);
+    --c-mistake-text: var(--c-mistake);
+    --c-blunder-text: var(--c-blunder);
+    --c-forced-text: var(--c-forced);
+    --c-book-text: var(--c-book);
   }
 }
 

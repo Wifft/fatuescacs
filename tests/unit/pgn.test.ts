@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parsePgn, PgnError } from "@/lib/chess/pgn";
-import { displaySan, toSpanishSan } from "@/lib/chess/notation";
+import { displaySan, fromSpanishSan, parseUserSan, toSpanishSan } from "@/lib/chess/notation";
 
 const START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -128,5 +128,24 @@ describe("notation", () => {
   it("leaves English untouched", () => {
     expect(displaySan("Nf3", "en")).toBe("Nf3");
     expect(displaySan("Nf3", "es")).toBe("Cf3");
+  });
+});
+
+describe("typed moves", () => {
+  it("converts Spanish SAN back to English", () => {
+    expect(fromSpanishSan("Cxd7")).toBe("Nxd7");
+    expect(fromSpanishSan("Rxe2")).toBe("Kxe2");
+    expect(fromSpanishSan("Td8#")).toBe("Rd8#");
+    expect(fromSpanishSan("exd8=D+")).toBe("exd8=Q+");
+    expect(fromSpanishSan("bxc3")).toBe("bxc3");
+    for (const san of ["Nf3", "Qxf7#", "O-O-O", "Kxe2", "a8=Q"]) {
+      expect(fromSpanishSan(toSpanishSan(san))).toBe(san);
+    }
+  });
+  it("normalises user input per notation, including 0-0 castling", () => {
+    expect(parseUserSan(" Dxd7 ", "es")).toBe("Qxd7");
+    expect(parseUserSan("Rd8", "en")).toBe("Rd8");
+    expect(parseUserSan("0-0-0", "es")).toBe("O-O-O");
+    expect(parseUserSan("o-o", "en")).toBe("O-O");
   });
 });

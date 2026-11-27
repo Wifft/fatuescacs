@@ -1,4 +1,7 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { Chess } from "chess.js";
+import { toSpanishSan } from "../../src/lib/chess/notation";
 import { blockExternalNetwork, registerUser, uniqueName } from "./helpers";
 
 // Short game: as White, 5... Bxd1?? is Black's blunder; as Black we get drills from Black's moves.
@@ -96,4 +99,36 @@ test("statistics use the saved games where the user played", async ({ page }) =>
   await expect(page.getByTestId("phase-opening")).toContainText("%");
   await expect(page.getByTestId("openings-table")).toBeVisible();
   await expect(page.getByText("Permitir un mate")).toBeVisible();
+});
+
+test("keyboard path: the board is accessible and the move can be typed in Spanish", async ({
+  page,
+}) => {
+  await registerUser(page, uniqueName("kb"), "clave-de-prueba");
+  await analyseAndSaveAsBlack(page);
+  await page.goto("/entrenar");
+  await expect(page.getByTestId("drill")).toBeVisible();
+
+  // Pieces have accessible names and the page has no serious axe violations.
+  await expect(page.getByRole("button", { name: /^Rey negro en / })).toBeVisible();
+  const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  const serious = axe.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(serious.map((v) => v.id)).toEqual([]);
+
+  // An illegal move is rejected; the engine's move typed in Spanish SAN is accepted.
+  await page.getByTestId("train-input").fill("Rxa1");
+  await page.getByRole("button", { name: "Comprobar" }).click();
+  await expect(page.getByText("Esa jugada no es legal en esta posición.")).toBeVisible();
+  const { drills } = (await (await page.request.get("/api/drills")).json()) as {
+    drills: { fen: string; bestUci: string }[];
+  };
+  const d = drills[0]!;
+  const san = new Chess(d.fen).move({
+    from: d.bestUci.slice(0, 2),
+    to: d.bestUci.slice(2, 4),
+    promotion: d.bestUci[4],
+  }).san;
+  await page.getByTestId("train-input").fill(toSpanishSan(san));
+  await page.getByRole("button", { name: "Comprobar" }).click();
+  await expect(page.getByTestId("train-result")).toHaveAttribute("data-verdict", "best");
 });
