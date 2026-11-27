@@ -101,6 +101,17 @@ Analizador de partidas de ajedrez en el navegador. La especificación completa (
   - las evaluaciones se agrupan en el store (`setEvals`, una actualización cada 150 ms como mucho) para reducir el TBT.
 - **e2e:** `workers: 4` en local, `expect.timeout` de 10 s, porque cada análisis corre un motor real.
 
+## Nombres de apertura en español
+
+- `lib/chess/opening-names-es.ts` (`openingNameEs`) traduce **al mostrar**. En `openings.json`, en SQLite y en las claves de estadísticas se guarda el nombre canónico en inglés, así que no hay que migrar datos y los análisis antiguos también salen traducidos.
+- Funcionamiento:
+  - frases idiomáticas exactas (`PHRASES`: «Ruy Lopez» → «Apertura española»);
+  - para el resto, núcleo (Defense, Variation…) + nombres propios + adjetivos concordados (orden inverso) + complementos nominales (orden inverso, con artículo en el más externo) + participios («rehusado»);
+  - los nombres compuestos («Poisoned Pawn») se reconocen como una sola palabra;
+  - las palabras desconocidas se mantienen, porque casi siempre son nombres propios.
+- Las jugadas dentro de los nombres pasan a SAN española. Los nombres de Chess.com, que vienen de un slug de URL, no se traducen.
+- `tests/unit/opening-names.test.ts` comprueba que ninguno de los 3.865 nombres del dataset conserve palabras estructurales en inglés. **Si se regenera `openings.json` y falla, añade la palabra al diccionario.**
+
 ## Motor
 
 - Build principal: `/engine/stockfish-19-lite-single.js` (+ `.wasm`, 1,8 MB / 1,2 MB gzip). Fallback: `/engine/stockfish-19-asm.js` (modo lento).

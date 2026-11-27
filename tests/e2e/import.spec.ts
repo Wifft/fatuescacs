@@ -29,12 +29,14 @@ test("import from Lichess (mocked API) and open a game", async ({ page }) => {
   await expect(rows.first()).toContainText("surrenderPLS");
   await expect(rows.first()).toContainText("Blitz");
   await expect(rows.first()).toContainText("C25");
+  // Opening names are shown in Spanish ("Vienna Game: Paulsen Variation").
+  await expect(rows.first()).toContainText("Partida vienesa");
   await rows.first().getByRole("link", { name: "Analizar" }).click();
   await expect(page).toHaveURL(/\/analysis#.+/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "Zablotsky_Sergei – surrenderPLS",
   );
-  await expect(page.getByTestId("opening")).toContainText("C25");
+  await expect(page.getByTestId("opening")).toContainText("C25 · Partida vienesa");
 });
 
 test("import from Chess.com (mocked API) skips variants", async ({ page }) => {

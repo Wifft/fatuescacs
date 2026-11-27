@@ -6,6 +6,7 @@ import { useAnalysis } from "@/store/analysis";
 import { useReport } from "@/store/use-report";
 import { Button } from "../ui";
 import { reportCardBlob, type ReportCardData } from "./report-card";
+import { openingNameEs } from "@/lib/chess/opening-names-es";
 
 const t = messages.exportReport;
 const fmt = (x: number | null | undefined) =>
@@ -39,7 +40,7 @@ export function ExportButtons() {
   const cardData = (): ReportCardData => ({
     title,
     subtitle: [h.Event, h.Date?.replace(/\.\?\?/g, ""), h.Result].filter(Boolean).join(" · "),
-    opening: opening ? `${opening.eco} · ${opening.name}` : null,
+    opening: opening ? `${opening.eco} · ${openingNameEs(opening.name)}` : null,
     players: (["w", "b"] as const).map((c) => ({
       name:
         (c === "w" ? h.White : h.Black) ??

@@ -6,6 +6,7 @@ import { api } from "@/lib/api-client";
 import { PHASES, type Stats } from "@/lib/chess/stats";
 import { messages } from "@/messages/es";
 import { useSession } from "@/store/session";
+import { openingNameEs } from "@/lib/chess/opening-names-es";
 
 const t = messages.statsPage;
 const pct = (x: number | null) =>
@@ -140,7 +141,7 @@ export function StatsView() {
               {worst.map((o) => (
                 <tr key={`${o.eco}|${o.name}`}>
                   <td className="max-w-[22rem] truncate px-3 py-2">
-                    {o.eco ? `${o.eco} · ${o.name}` : t.unknownOpening}
+                    {o.eco && o.name ? `${o.eco} · ${openingNameEs(o.name)}` : t.unknownOpening}
                   </td>
                   <td className="px-3 py-2 text-right">{o.games}</td>
                   <td className="px-3 py-2 text-right whitespace-nowrap">
