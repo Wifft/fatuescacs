@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analizador de partidas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: herramienta de trabajo, precisa y tranquila, como el tablero de análisis de un club.
+   IDEA: la mesa de análisis — tablero de madera, planilla de jugadas y la curva de la partida.
+   PICTURE: el propio tablero con barra de evaluación y la flecha de la mejor jugada.
+   COLOUR/TYPE: blanco y tinta, madera de arce y nogal, cuatro colores de calificación; Archivo.
+   LAYOUT: tablero a la izquierda, planilla a la derecha; curva y diagnóstico del motor debajo. */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#151413);--ink:light-dark(#1a1917,#ecebe7);--mute:light-dark(#6b6862,#9d9a93);--line:light-dark(#e6e3dd,#2c2a27);--soft:light-dark(#f5f3ef,#1d1c1a);--sel:light-dark(#1a1917,#ecebe7);--seli:light-dark(#fff,#151413);
+--lt:#ecd8b4;--dk:#ad7b4e;--best:#2f7de1;--good:#5c9a48;--ina:#d9a400;--mis:#e8701a;--blu:#d23b2f}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Archivo,system-ui,sans-serif;overflow-x:clip;font-variant-numeric:tabular-nums}
+.band{padding:clamp(20px,3vw,40px) max(4vw,16px);max-width:1240px;margin:0 auto}
+h1{font-size:clamp(26px,3.4vw,36px);line-height:1.05;margin:0 0 4px;text-wrap:balance}
+.sub{color:var(--mute);margin:0;font-size:15px}
+.main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(18px,3vw,36px);align-items:start}
+.boardwrap{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px}
+.evalbar{position:relative;background:#2a2724;border-radius:4px;overflow:hidden}
+.evalbar i{position:absolute;left:0;right:0;bottom:0;background:#f4f2ec;transition:height .35s ease}
+.evalbar b{position:absolute;left:0;right:0;font-size:10px;text-align:center;font-weight:700;z-index:1}
+.board{position:relative;aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);border-radius:4px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 8px 28px rgba(60,40,20,.18);user-select:none}
+.sq{position:relative;display:grid;place-items:center;background:var(--lt)}
+.sq.d{background:var(--dk)}
+.sq.hl::after{content:"";position:absolute;inset:0;background:rgba(255,214,64,.42)}
+.sq small{position:absolute;font-size:10px;font-weight:600;opacity:.7;color:#4a3420;line-height:1}
+.sq.d small{color:#f6e8cc}
+.sq .f{right:3px;bottom:2px}.sq .r{left:3px;top:3px}
+.pc{position:relative;z-index:1;font-size:min(9.4vw,calc((100vw - 120px)/8*.8),56px);line-height:1;font-family:"Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",serif}
+.pc.w{color:#fbfaf6;-webkit-text-stroke:1.4px #2b241d;text-shadow:0 2px 2px rgba(0,0,0,.25)}
+.pc.b{color:#1d1915;text-shadow:0 2px 2px rgba(0,0,0,.25)}
+.arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.nav{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+button,select,textarea{font:inherit;color:inherit}
+.btn{min-height:44px;min-width:44px;padding:0 14px;border:1px solid var(--line);background:var(--soft);border-radius:8px;cursor:pointer;font-size:16px}
+.btn:hover{border-color:var(--mute)}
+.btn.pri{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+.btn:disabled{opacity:.5;cursor:default}
+:focus-visible{outline:2px solid var(--best);outline-offset:2px}
+.side{display:grid;gap:16px}
+.acc{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.acc div{background:var(--soft);border-radius:10px;padding:10px 14px}
+.acc span{display:block;font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acc strong{font-size:30px;line-height:1.1}
+.acc em{font-style:normal;font-size:13px;color:var(--mute)}
+.now{border-left:3px solid var(--line);padding:2px 0 2px 12px;min-height:66px;font-size:15px}
+.now .t{font-weight:700;font-size:17px}
+.moves{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:10px;display:grid;grid-template-columns:3em 1fr 1fr;align-content:start}
+.moves .n{color:var(--mute);padding:6px 0 6px 10px;font-size:14px;background:var(--soft)}
+.mv{border:0;background:none;text-align:left;padding:6px 10px;cursor:pointer;display:flex;gap:6px;align-items:center;min-height:36px;font-size:15px}
+.mv:hover{background:var(--soft)}
+.mv.on{background:var(--sel);color:var(--seli)}
+.mv .g{font-weight:700;font-size:13px}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;background:transparent}
+.c-best{--c:var(--best)}.c-good{--c:var(--good)}.c-ina{--c:var(--ina)}.c-mis{--c:var(--mis)}.c-blu{--c:var(--blu)}
+[class*=c-] .dot{background:var(--c)}[class*=c-] .g{color:var(--c)}
+.mv.on .g{color:inherit}
+.prog{height:6px;background:var(--soft);border-radius:3px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--best);transition:width .2s}
+.status{font-size:14px;color:var(--mute);margin-top:6px}
+.fig{position:relative;height:150px;border-radius:10px;overflow:hidden;cursor:pointer;background:#2a2724}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+h2{font-size:20px;margin:0 0 10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:var(--mute);margin-top:10px}
+.legend span{display:flex;align-items:center;gap:6px}
+details{border-top:1px solid var(--line);padding-top:14px}
+summary{cursor:pointer;font-weight:600;min-height:32px}
+textarea{width:100%;min-height:130px;font-size:16px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--soft);resize:vertical;font-family:ui-monospace,Menlo,monospace;font-size:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+select{min-height:44px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--soft);font-size:16px}
+.err{color:var(--blu);font-size:14px}
+.diag{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.diag div{box-shadow:0 0 0 .5px var(--line);padding:12px 14px}
+.diag span{display:block;font-size:13px;color:var(--mute)}
+.diag strong{font-size:18px;white-space:nowrap}
+.verdict{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--soft);font-size:15px}
+.verdict.ok{box-shadow:inset 3px 0 0 var(--good)}.verdict.ko{box-shadow:inset 3px 0 0 var(--blu)}
+.note{font-size:13px;color:var(--mute)}
+@media(max-width:820px){.main{grid-template-columns:minmax(0,1fr)}.moves{max-height:260px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="band" style="padding-bottom:12px">
+  <h1>Analizador de partidas</h1>
+  <p class="sub">Prueba de concepto · Stockfish 19 corre dentro de tu navegador, sin servidor.</p>
+</div>
+
+<div class="band main" style="padding-top:8px">
+  <div>
+    <div class="boardwrap">
+      <div class="evalbar" id="evalbar" aria-label="Barra de evaluación"><i id="evalfill" style="height:50%"></i><b id="evaltxt" style="bottom:4px;color:#2a2724">0.0</b></div>
+      <div class="board" id="board" role="img" aria-label="Tablero"></div>
+    </div>
+    <div class="nav">
+      <button class="btn" id="first" aria-label="Inicio">«</button>
+      <button class="btn" id="prev" aria-label="Anterior">‹</button>
+      <button class="btn" id="next" aria-label="Siguiente">›</button>
+      <button class="btn" id="last" aria-label="Final">»</button>
+      <button class="btn" id="flip">Girar tablero</button>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="acc">
+      <div><span id="wname">Blancas</span><strong id="wacc">–</strong> <em>% precisión</em></div>
+      <div><span id="bname">Negras</span><strong id="bacc">–</strong> <em>% precisión</em></div>
+    </div>
+    <div class="now" id="now"><div class="t">Posición inicial</div><div class="note">Usa ← → o pulsa una jugada.</div></div>
+    <div>
+      <div class="prog"><i id="prog"></i></div>
+      <div class="status" id="status">Cargando motor…</div>
+    </div>
+    <div class="moves" id="moves"></div>
+    <details id="pgnbox">
+      <summary>Pegar otra partida (PGN)</summary>
+      <textarea id="pgn" spellcheck="false" aria-label="PGN"></textarea>
+      <div class="row">
+        <label for="depth">Profundidad</label>
+        <select id="depth"><option value="10">10 · rápida</option><option value="14" selected>14 · normal</option><option value="18">18 · profunda</option></select>
+        <button class="btn pri" id="go">Analizar</button>
+      </div>
+      <div class="err" id="err"></div>
+    </details>
+  </div>
+</div>
+
+<div class="band" style="padding-top:0">
+  <h2>Curva de la partida</h2>
+  <div class="fig" id="fig" aria-label="Curva de evaluación"><svg id="graph"></svg></div>
+  <div class="legend">
+    <span class="c-best"><i class="dot"></i>Mejor jugada</span>
+    <span class="c-good"><i class="dot"></i>Buena</span>
+    <span class="c-ina"><i class="dot"></i>Imprecisión ?!</span>
+    <span class="c-mis"><i class="dot"></i>Error ?</span>
+    <span class="c-blu"><i class="dot"></i>Error grave ??</span>
+  </div>
+</div>
+
+<div class="band" style="padding-top:0">
+  <h2>Diagnóstico del motor</h2>
+  <div class="diag">
+    <div><span id="d-engl">Motor</span><strong id="d-eng">–</strong></div>
+    <div><span>Carga del motor</span><strong id="d-load">–</strong></div>
+    <div><span>Velocidad</span><strong id="d-nps">–</strong></div>
+    <div><span>Por posición</span><strong id="d-pp">–</strong></div>
+    <div><span>Partida completa</span><strong id="d-tot">–</strong></div>
+  </div>
+  <div class="verdict" id="verdict">Objetivo de la fase 1: una partida de 40 jugadas a profundidad 16 en menos de 60 s.</div>
+  <p class="note">Partida de ejemplo: Morphy contra el duque de Brunswick y el conde Isouard, París 1858 (la "partida de la ópera").</p>
+</div>
+
+<script type="module">
+import { Chess } from './chess.js';
+{
+const $ = id => document.getElementById(id);
+const SAMPLE = `[Event "Paris"]
+[Date "1858.??.??"]
+[White "Paul Morphy"]
+[Black "Duque de Brunswick y conde Isouard"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 d6 3. d4 Bg4 4. dxe5 Bxf3 5. Qxf3 dxe5 6. Bc4 Nf6 7. Qb3 Qe7
+8. Nc3 c6 9. Bg5 b5 10. Nxb5 cxb5 11. Bxb5+ Nbd7 12. O-O-O Rd8 13. Rxd7 Rxd7
+14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8# 1-0`;
+const GLYPH = {k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
+const toEs = s => s.replace(/[KQRBN]/g, c => ({K:'R',Q:'D',R:'T',B:'A',N:'C'})[c]);
+const CLS = {best:['Mejor jugada',''],good:['Buena',''],ina:['Imprecisión','?!'],mis:['Error','?'],blu:['Error grave','??']};
+
+// ---------- motor ----------
+class Engine {
+  constructor(url){ this.url=url; this.h=null; }
+  start(timeout){
+    return new Promise((res,rej)=>{
+      const t0=performance.now();
+      let w; try{ w=new Worker(this.url); }catch(e){ return rej(e); }
+      this.w=w;
+      const to=setTimeout(()=>{ w.terminate(); rej(new Error('timeout')); },timeout);
+      w.onerror=e=>{ clearTimeout(to); w.terminate(); rej(e); };
+      w.onmessage=e=>{ const l=String(e.data); if(this.h) this.h(l);
+        if(l==='uciok') w.postMessage('isready');
+        if(l==='readyok' && !this.ready){ this.ready=true; clearTimeout(to); this.loadMs=performance.now()-t0; res(this); } };
+      w.postMessage('uci');
+    });
+  }
+  send(c){ this.w.postMessage(c); }
+  analyse(fen,depth){
+    return new Promise(res=>{
+      const out={cp:0,mate:null,pv:[],depth:0,nps:0,best:null};
+      this.h=l=>{
+        if(l.startsWith('info') && l.includes(' pv ') && !/multipv [2-9]/.test(l)){
+          const m=l.match(/score (cp|mate) (-?\d+)/); if(m){ if(m[1]==='cp'){out.cp=+m[2];out.mate=null}else{out.mate=+m[2]} }
+          const d=l.match(/ depth (\d+)/); if(d) out.depth=+d[1];
+          const n=l.match(/ nps (\d+)/); if(n) out.nps=+n[1];
+          out.pv=l.split(' pv ')[1].trim().split(' ');
+        } else if(l.startsWith('bestmove')){ out.best=l.split(' ')[1]; this.h=null; res(out); }
+      };
+      this.send('position fen '+fen); this.send('go depth '+depth);
+    });
+  }
+}
+let engine=null, engName='';
+async function boot(){
+  const opts=[['stockfish-19-lite-single.js','Stockfish 19 lite','WASM'],['stockfish-19-asm.js','Stockfish 19','asm.js']];
+  for(const [url,name,kind] of opts){
+    try{ engine=await new Engine(url).start(25000); engName=name; $('d-engl').textContent='Motor · '+kind+' · 1 hilo'; break; }catch(e){ console.warn('motor',url,e); }
+  }
+  if(!engine){ $('status').textContent='No se pudo cargar el motor en este navegador.'; $('d-eng').textContent='No disponible'; return false; }
+  engine.send('setoption name Hash value 32'); engine.send('isready');
+  $('d-eng').textContent=engName;
+  $('d-load').textContent=fmtS(engine.loadMs);
+  return true;
+}
+
+// ---------- utilidades ----------
+const fmtS = ms => (ms/1000).toLocaleString('es-ES',{maximumFractionDigits: ms<10000?2:1})+' s';
+const winW = cp => 50+50*(2/(1+Math.exp(-0.00368208*Math.max(-1000,Math.min(1000,cp))))-1);
+const evalCp = e => e.mate!=null ? (e.mate>0?10000:-10000) : e.cp;
+const fmtEval = e => e.mateDone ? (e.mate>0?'1-0':'0-1') : e.mate!=null ? (e.mate>0?'+':'−')+'M'+Math.abs(e.mate) : (e.cp>0?'+':e.cp<0?'−':'')+(Math.abs(e.cp)/100).toFixed(1);
+function uciToSan(fen, uci, n){
+  const g=new Chess(fen), out=[];
+  for(const u of uci.slice(0,n)){ try{ const m=g.move({from:u.slice(0,2),to:u.slice(2,4),promotion:u[4]}); out.push(m); }catch{ break; } }
+  return out;
+}
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+
+// ---------- estado ----------
+let G={fens:[],moves:[],evals:[],cls:[],loss:[]}, ply=0, flip=false, job=0, running=null;
+
+function loadGame(pgn){
+  const c=new Chess(); c.loadPgn(pgn);
+  const moves=c.history({verbose:true});
+  const h=c.getHeaders();
+  const fens=[moves.length?moves[0].before:c.fen(), ...moves.map(m=>m.after)];
+  G={fens,moves,evals:Array(fens.length).fill(null),cls:[],loss:[]};
+  $('wname').textContent=h.White||'Blancas'; $('bname').textContent=h.Black||'Negras';
+  $('wacc').textContent='–'; $('bacc').textContent='–';
+  ply=0; renderMoves(); render();
+}
+
+function terminal(fen){
+  const g=new Chess(fen);
+  if(g.isCheckmate()) return {cp:0,mate:g.turn()==='w'?-1:1,mateDone:true,pv:[],best:null,depth:0};
+  if(g.isStalemate()||g.isInsufficientMaterial()) return {cp:0,mate:null,pv:[],best:null,depth:0};
+  return null;
+}
+
+async function analyseAll(){
+  const my=++job;
+  if(running){ engine.send('stop'); await running; }
+  if(my!==job) return;
+  const depth=+$('depth').value, n=G.fens.length, t0=performance.now();
+  let npsSum=0,npsN=0;
+  engine.send('ucinewgame'); engine.send('isready');
+  $('go').disabled=false; $('verdict').className='verdict';
+  for(let i=0;i<n;i++){
+    if(my!==job) return;
+    $('status').textContent=`Analizando posición ${i+1} de ${n} · profundidad ${depth}`;
+    $('prog').style.width=(i/n*100)+'%';
+    const fen=G.fens[i], stm=fen.split(' ')[1];
+    let e=terminal(fen);
+    if(!e){
+      running=engine.analyse(fen,depth); const r=await running; running=null;
+      if(r.nps){ npsSum+=r.nps; npsN++; }
+      const s=stm==='w'?1:-1;
+      e={cp:r.cp*s,mate:r.mate!=null?r.mate*s:null,pv:r.pv,best:r.best,depth:r.depth};
+    }
+    G.evals[i]=e;
+    if(i>0) classify(i);
+    if(i===ply||i===ply+1) render();
+    renderMoves(); drawGraph();
+  }
+  const ms=performance.now()-t0;
+  $('prog').style.width='100%';
+  $('status').textContent=`Análisis completo · ${n} posiciones · profundidad ${depth}`;
+  accuracy();
+  $('d-nps').textContent=npsN?Math.round(npsSum/npsN/1000).toLocaleString('es-ES')+' kN/s':'–';
+  $('d-pp').textContent=fmtS(ms/n);
+  $('d-tot').textContent=fmtS(ms);
+  const est=ms/n*81*(depth<16?Math.pow(1.5,16-depth):1/Math.pow(1.5,depth-16));
+  const ok=est<60000;
+  $('verdict').className='verdict '+(ok?'ok':'ko');
+  $('verdict').textContent=`Estimación para 40 jugadas a profundidad 16: ≈ ${fmtS(est)} en este dispositivo. `+(ok?'Cumple el objetivo de 60 s.':'No llega al objetivo de 60 s: habría que bajar profundidad o analizar en dos pasadas.')+(depth!==16?' (Extrapolado desde profundidad '+depth+'; analiza a 18 para una cifra más fiable.)':'');
+  render();
+}
+
+function classify(i){
+  const a=G.evals[i-1], b=G.evals[i], white=G.moves[i-1].color==='w';
+  const wa=winW(evalCp(a)), wb=winW(evalCp(b));
+  const loss=Math.max(0, white? wa-wb : wb-wa);
+  const m=G.moves[i-1], uci=m.from+m.to+(m.promotion||'');
+  let c = (a.best===uci || b.mateDone) ? 'best' : loss<5?'good':loss<10?'ina':loss<20?'mis':'blu';
+  if(c!=='best' && loss<1.5) c='good';
+  G.cls[i]=c; G.loss[i]=loss;
+}
+function accuracy(){
+  for(const side of ['w','b']){
+    const xs=[]; G.moves.forEach((m,k)=>{ if(m.color===side && G.loss[k+1]!=null) xs.push(Math.max(0,Math.min(100,103.1668*Math.exp(-0.04354*G.loss[k+1])-3.1669))); });
+    $(side+'acc').textContent = xs.length ? (xs.reduce((s,x)=>s+x,0)/xs.length).toLocaleString('es-ES',{maximumFractionDigits:1}) : '–';
+  }
+}
+
+// ---------- tablero ----------
+function sqXY(sq){ const f=sq.charCodeAt(0)-97, r=+sq[1]; return flip?[7-f,r-1]:[f,8-r]; }
+function render(){
+  const fen=G.fens[ply]||new Chess().fen(), g=new Chess(fen), last=G.moves[ply-1];
+  const hl=last?[last.from,last.to]:[];
+  let html='';
+  for(let y=0;y<8;y++) for(let x=0;x<8;x++){
+    const f=flip?7-x:x, r=flip?y+1:8-y, sq='abcdefgh'[f]+r, p=g.get(sq), dark=(f+r)%2===0;
+    html+=`<div class="sq${dark?' d':''}${hl.includes(sq)?' hl':''}">`+
+      (y===7?`<small class="f">${'abcdefgh'[f]}</small>`:'')+(x===0?`<small class="r">${r}</small>`:'')+
+      (p?`<span class="pc ${p.color}">${GLYPH[p.type]}︎</span>`:'')+'</div>';
+  }
+  const e=G.evals[ply];
+  let arrow='';
+  if(e && e.best){ const [x1,y1]=sqXY(e.best.slice(0,2)), [x2,y2]=sqXY(e.best.slice(2,4));
+    arrow=`<svg class="arrows" viewBox="0 0 8 8"><defs><marker id="ah" markerWidth="3" markerHeight="3" refX="1.6" refY="1.5" orient="auto"><path d="M0,0 L3,1.5 L0,3z" fill="#2f7de1"/></marker></defs><line x1="${x1+.5}" y1="${y1+.5}" x2="${x2+.5-(x2-x1)*.12}" y2="${y2+.5-(y2-y1)*.12}" stroke="#2f7de1" stroke-width=".16" stroke-linecap="round" opacity=".85" marker-end="url(#ah)"/></svg>`; }
+  $('board').innerHTML=html+arrow;
+  // barra
+  const w=e?winW(evalCp(e)):50, pct=flip?100-w:w;
+  $('evalfill').style.height=pct+'%';
+  $('evalbar').style.transform=flip?'scaleY(-1)':'';
+  const t=$('evaltxt'); t.textContent=e?fmtEval(e).replace('−','-'):'…';
+  t.style.transform=flip?'scaleY(-1)':'';
+  const whiteBetter=w>=50; t.style.bottom=whiteBetter?'4px':''; t.style.top=whiteBetter?'':'4px'; t.style.color=whiteBetter?'#2a2724':'#f4f2ec';
+  // panel
+  const now=$('now');
+  if(!last){ now.innerHTML=`<div class="t">Posición inicial</div><div class="note">${e&&e.best?'Mejor: '+esc(toEs(uciToSan(fen,[e.best],1)[0]?.san||'')):'Usa ← → o pulsa una jugada.'}</div>`; now.style.borderColor='var(--line)'; }
+  else{
+    const num=Math.ceil(ply/2)+(last.color==='w'?'.':'…'), c=G.cls[ply], prev=G.evals[ply-1];
+    let lines='';
+    if(c){ lines+=`<div><b style="color:var(--${c})">${CLS[c][0]}</b>${G.loss[ply]>=1?` · pierde ${G.loss[ply].toFixed(0)} % de probabilidad de ganar`:''}</div>`;
+      if(c!=='best' && prev && prev.best){ const alt=uciToSan(G.fens[ply-1],prev.pv.length?prev.pv:[prev.best],5);
+        if(alt.length) lines+=`<div>Mejor era <b>${esc(toEs(alt[0].san))}</b> <span class="note">${esc(alt.slice(1).map(m=>toEs(m.san)).join(' '))}</span></div>`; } }
+    if(e) lines+=`<div class="note">Evaluación ${esc(fmtEval(e))}${e.depth?' · prof. '+e.depth:''}</div>`;
+    else lines+=`<div class="note">Pendiente de análisis…</div>`;
+    now.innerHTML=`<div class="t">${num} ${esc(toEs(last.san))}</div>${lines}`;
+    now.style.borderColor=c?`var(--${c})`:'var(--line)';
+  }
+  document.querySelectorAll('.mv').forEach(b=>b.classList.toggle('on',+b.dataset.p===ply));
+  const on=document.querySelector('.mv.on'); if(on) on.scrollIntoView({block:'nearest'});
+  drawGraph();
+}
+function renderMoves(){
+  let h='';
+  G.moves.forEach((m,k)=>{ const p=k+1, c=G.cls[p];
+    if(m.color==='w'||k===0) h+=`<div class="n">${Math.ceil(p/2)}.</div>`+(m.color==='b'?'<div></div>':'');
+    h+=`<button class="mv${c?' c-'+c:''}${p===ply?' on':''}" data-p="${p}"><i class="dot"></i>${esc(toEs(m.san))}<span class="g">${c?CLS[c][1]:''}</span></button>`;
+  });
+  $('moves').innerHTML=h||'<div class="n" style="grid-column:1/-1">Sin jugadas.</div>';
+}
+
+// ---------- gráfica ----------
+const svg=$('graph');
+function drawGraph(){
+  const W=svg.clientWidth, H=svg.clientHeight, n=G.fens.length;
+  if(!W||n<2){ svg.innerHTML=''; return; }
+  const X=i=>i/(n-1)*W, Y=v=>H-(v/100)*H;
+  const pts=G.evals.map((e,i)=>e?[X(i),Y(winW(evalCp(e)))]:null).filter(Boolean);
+  let s=`<line x1="0" x2="${W}" y1="${H/2}" y2="${H/2}" stroke="#6b6560" stroke-dasharray="3 4"/>`;
+  if(pts.length>1){ s+=`<path d="M${pts[0][0]},${H} `+pts.map(p=>`L${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')+` L${pts[pts.length-1][0]},${H}Z" fill="#f1eee7"/>`; }
+  G.cls.forEach((c,i)=>{ if(c==='ina'||c==='mis'||c==='blu'){ const e=G.evals[i]; s+=`<circle cx="${X(i)}" cy="${Y(winW(evalCp(e)))}" r="${c==='blu'?5:4}" fill="var(--${c})" stroke="#2a2724" stroke-width="1.5"/>`; } });
+  s+=`<line x1="${X(ply)}" x2="${X(ply)}" y1="0" y2="${H}" stroke="#2f7de1" stroke-width="2"/>`;
+  svg.innerHTML=s;
+}
+const graphRO=new ResizeObserver(drawGraph); graphRO.observe(svg);
+$('fig').addEventListener('click',ev=>{ const r=svg.getBoundingClientRect(); go(Math.round((ev.clientX-r.left)/r.width*(G.fens.length-1))); });
+
+// ---------- controles ----------
+function go(p){ ply=Math.max(0,Math.min(G.fens.length-1,p)); render(); }
+$('first').onclick=()=>go(0); $('prev').onclick=()=>go(ply-1); $('next').onclick=()=>go(ply+1); $('last').onclick=()=>go(G.fens.length-1);
+$('flip').onclick=()=>{ flip=!flip; render(); };
+$('moves').addEventListener('click',ev=>{ const b=ev.target.closest('.mv'); if(b) go(+b.dataset.p); });
+document.addEventListener('keydown',ev=>{ if(ev.target.tagName==='TEXTAREA'||ev.target.tagName==='SELECT') return;
+  if(ev.key==='ArrowLeft'){go(ply-1);ev.preventDefault()} if(ev.key==='ArrowRight'){go(ply+1);ev.preventDefault()}
+  if(ev.key==='Home') go(0); if(ev.key==='End') go(G.fens.length-1); });
+$('go').onclick=()=>{ $('err').textContent='';
+  try{ loadGame($('pgn').value); }catch(e){ $('err').textContent='No he podido leer ese PGN: '+(e.message||e); return; }
+  try{ localStorage.setItem('pgn',$('pgn').value); }catch{}
+  if(engine) analyseAll(); };
+
+let saved=null; try{ saved=localStorage.getItem('pgn'); }catch{}
+$('pgn').value=saved||SAMPLE;
+try{ loadGame($('pgn').value); }catch{ $('pgn').value=SAMPLE; loadGame(SAMPLE); }
+boot().then(ok=>{ if(ok) analyseAll(); });
+}
+</script>
+</body>
+</html>
