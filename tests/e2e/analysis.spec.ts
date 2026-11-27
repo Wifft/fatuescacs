@@ -25,6 +25,8 @@ test("paste a PGN → full analysis → accuracy appears", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Legall – Saint Brie");
   // 5... Axd1 takes the queen but walks into mate: it must be a blunder.
   await expect(page.getByTestId("move-10")).toHaveAttribute("data-class", "blunder");
+  await page.getByTestId("move-10").click();
+  await expect(page.getByTestId("explanation")).toContainText("Permite mate en 2: 6. Axf7+");
   // Mate is the best move, shown in Spanish notation.
   await expect(page.getByTestId("move-13")).toHaveAttribute("data-class", "best");
   await expect(page.getByTestId("move-13")).toContainText("Cd5#");
