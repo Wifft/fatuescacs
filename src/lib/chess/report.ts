@@ -36,8 +36,14 @@ export function buildReport(
   moves: readonly ReportMove[],
   legalMoves: readonly number[],
   evals: readonly (ReportEval | null | undefined)[],
-  t: ClassifyThresholds = CLASSIFY_THRESHOLDS,
+  options: {
+    thresholds?: ClassifyThresholds;
+    /** Leading moves that follow the opening book: classified "book", not penalised. */
+    bookPlies?: number;
+  } = {},
 ): GameReport {
+  const t = options.thresholds ?? CLASSIFY_THRESHOLDS;
+  const bookPlies = options.bookPlies ?? 0;
   const counts = {
     w: { inaccuracy: 0, mistake: 0, blunder: 0 },
     b: { inaccuracy: 0, mistake: 0, blunder: 0 },
@@ -57,6 +63,11 @@ export function buildReport(
       },
       t,
     );
+    // Forced still wins over book: it isn't a choice either way.
+    if (i < bookPlies && c.cls !== "forced") {
+      const { loss, winBefore, winAfter } = c;
+      return { cls: "book" as const, loss, winBefore, winAfter };
+    }
     if (c.cls === "inaccuracy" || c.cls === "mistake" || c.cls === "blunder")
       counts[m.color][c.cls]++;
     return c;

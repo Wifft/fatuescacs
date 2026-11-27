@@ -16,7 +16,8 @@
     "postinstall": "node scripts/copy-engine.mjs",
     "golden:record": "tsx scripts/record-golden.mts record",
     "golden:expected": "tsx scripts/record-golden.mts expected",
-    "bench": "node scripts/bench.mjs"
+    "bench": "node scripts/bench.mjs",
+    "openings:build": "tsx scripts/build-openings.mts"
   },
   "dependencies": {
     "chess.js": "1.4.0",
