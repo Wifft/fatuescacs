@@ -71,3 +71,32 @@ test("notation can be switched to English", async ({ page }) => {
   await page.getByLabel("Notación").selectOption("en");
   await expect(page.getByTestId("move-13")).toContainText("Nd5#");
 });
+
+test("the report can be downloaded as a 1200×630 PNG", async ({ page }) => {
+  await analyse(page, LEGAL);
+  await expect(page.getByTestId("progress-text")).toHaveAttribute("data-phase", "done", {
+    timeout: 60_000,
+  });
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByTestId("download-image").click(),
+  ]);
+  expect(download.suggestedFilename()).toBe("analisis-legall-saint-brie.png");
+  const path = await download.path();
+  const { readFileSync, copyFileSync } = await import("node:fs");
+  const png = readFileSync(path);
+  // PNG signature + IHDR width/height.
+  expect(png.subarray(1, 4).toString()).toBe("PNG");
+  expect(png.readUInt32BE(16)).toBe(1200);
+  expect(png.readUInt32BE(20)).toBe(630);
+  if (process.env.SAVE_CARD) copyFileSync(path, process.env.SAVE_CARD);
+});
+
+test("the about page lists credits and every production licence", async ({ page }) => {
+  await page.goto("/acerca");
+  await expect(page.getByRole("link", { name: "Stockfish", exact: true })).toBeVisible();
+  await expect(page.getByText("GPL-3.0").first()).toBeVisible();
+  const rows = page.getByTestId("deps").locator("tbody tr");
+  expect(await rows.count()).toBeGreaterThan(20);
+  await expect(page.getByTestId("deps")).toContainText("stockfish");
+});

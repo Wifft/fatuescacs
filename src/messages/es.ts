@@ -19,6 +19,7 @@ export const messages = {
     history: "Historial",
     train: "Entrenar",
     stats: "Estadísticas",
+    about: "Acerca de",
     account: "Cuenta",
   },
   importPage: {
@@ -195,6 +196,71 @@ export const messages = {
       "eval-swing": "Errores posicionales",
     },
     pieces: { k: "Rey", q: "Dama", r: "Torre", b: "Alfil", n: "Caballo", p: "Peón" },
+  },
+  exportReport: {
+    share: "Compartir",
+    download: "Descargar imagen",
+    waitAnalysis: "Espera a que termine el análisis",
+    error: "No se pudo exportar.",
+    counts: (i: number, m: number, b: number) =>
+      [
+        `${i} ${i === 1 ? "imprecisión" : "imprecisiones"}`,
+        `${m} ${m === 1 ? "error" : "errores"}`,
+        `${b} ${b === 1 ? "error grave" : "errores graves"}`,
+      ].join(" · "),
+    footer: (host: string) => `Analizado con Stockfish en el navegador · ${host}`,
+  },
+  about: {
+    title: "Acerca de",
+    intro:
+      "Un analizador de partidas de ajedrez gratuito y de código abierto: analiza tus partidas con Stockfish dentro de tu navegador y te explica dónde te equivocaste.",
+    privacyTitle: "Privacidad",
+    privacy: [
+      "El motor de ajedrez se ejecuta en tu dispositivo. El servidor nunca analiza tus partidas.",
+      "Sin cuenta no guardamos nada: el borrador del PGN, tus preferencias y la caché de análisis viven solo en tu navegador.",
+      "Con cuenta guardamos tu nombre de usuario, un hash de tu contraseña (scrypt) y los análisis que tú decidas guardar. No pedimos email.",
+      "Al importar partidas, tu navegador consulta directamente las APIs públicas de Lichess o Chess.com.",
+    ],
+    licenseTitle: "Licencia",
+    license:
+      "Este programa es software libre: puedes redistribuirlo y modificarlo bajo los términos de la Licencia Pública General de GNU, versión 3 (GPL-3.0).",
+    source: "Código fuente",
+    creditsTitle: "Créditos",
+    credits: [
+      [
+        "Stockfish",
+        "https://stockfishchess.org/",
+        "Motor de ajedrez. © Los desarrolladores de Stockfish. GPL-3.0.",
+      ],
+      [
+        "stockfish.js",
+        "https://github.com/nmrugg/stockfish.js",
+        "Stockfish en WebAssembly, de Nathan Rugg y Chess.com. GPL-3.0. Se distribuye sin modificar.",
+      ],
+      [
+        "lichess-org/chess-openings",
+        "https://github.com/lichess-org/chess-openings",
+        "Nombres y códigos ECO de las aperturas. CC0-1.0.",
+      ],
+      ["chess.js", "https://github.com/jhlywa/chess.js", "Reglas del ajedrez y PGN. BSD-2-Clause."],
+      ["react-chessboard", "https://github.com/Clariity/react-chessboard", "Tablero. MIT."],
+      [
+        "Lichess",
+        "https://lichess.org/",
+        "Fórmula de probabilidad de victoria y método de precisión, adaptados de su código abierto (AGPL); API pública de partidas.",
+      ],
+      [
+        "Chess.com",
+        "https://www.chess.com/news/view/published-data-api",
+        "API pública de partidas.",
+      ],
+    ] as [string, string, string][],
+    depsTitle: "Dependencias de producción",
+    depsIntro: (n: number) =>
+      `${n} paquetes, generados automáticamente con pnpm licenses en cada build.`,
+    depName: "Paquete",
+    depVersion: "Versión",
+    depLicense: "Licencia",
   },
   home: {
     pgnLabel: "Partida en PGN",

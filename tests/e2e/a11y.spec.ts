@@ -37,6 +37,7 @@ for (const [name, path] of [
   ["entrenar", "/entrenar"],
   ["estadisticas", "/estadisticas"],
   ["motor", "/dev/engine"],
+  ["acerca", "/acerca"],
 ] as const) {
   test(`axe: ${name}`, async ({ page }) => {
     await page.goto(path);

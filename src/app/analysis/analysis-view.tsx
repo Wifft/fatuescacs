@@ -7,9 +7,10 @@ import { MoveList } from "@/components/moves/move-list";
 import { AccuracySummary } from "@/components/report/accuracy-summary";
 import { AnalysisProgress, Diagnostics } from "@/components/report/analysis-progress";
 import { CurrentMove } from "@/components/report/current-move";
+import { ExportButtons } from "@/components/report/export-buttons";
 import { SaveButton } from "@/components/report/save-button";
 import { ClassLegend, EvalGraph } from "@/components/report/eval-graph";
-import { Button, Select } from "@/components/ui";
+import { Select } from "@/components/ui";
 import type { Notation } from "@/lib/chess/notation";
 import { identifyOpening, loadOpeningTable } from "@/lib/chess/openings";
 import { parsePgn, PgnError } from "@/lib/chess/pgn";
@@ -47,7 +48,6 @@ export function AnalysisView() {
   const opening = useAnalysis((s) => s.opening?.opening);
   const notation = useAnalysis((s) => s.notation);
   const depth = useAnalysis((s) => s.depth);
-  const [copied, setCopied] = useState(false);
   const ids = { notation: useId(), depth: useId() };
 
   useEffect(() => {
@@ -121,19 +121,7 @@ export function AnalysisView() {
           >
             {t.back}
           </Link>
-          <Button
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(window.location.href);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              } catch {
-                /* clipboard unavailable */
-              }
-            }}
-          >
-            {copied ? t.copied : t.copyLink}
-          </Button>
+          <ExportButtons />
         </div>
       </header>
 
