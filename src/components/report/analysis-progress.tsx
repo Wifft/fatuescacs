@@ -48,7 +48,9 @@ export function AnalysisProgress() {
       >
         {text}
       </p>
-      {engine?.build === "asm" && <p className="text-sm text-[var(--c-mistake)]">{t.slowMode}</p>}
+      {engine?.build === "asm" && (
+        <p className="text-sm text-[var(--c-mistake-text)]">{t.slowMode}</p>
+      )}
     </div>
   );
 }

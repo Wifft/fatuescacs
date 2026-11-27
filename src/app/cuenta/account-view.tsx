@@ -201,7 +201,7 @@ export function AccountView() {
         />
         {mode === "register" && <p className="text-sm text-muted">{t.noRecoveryWarning}</p>}
         {error && (
-          <p role="alert" className="text-[var(--c-blunder)]" data-testid="account-error">
+          <p role="alert" className="text-[var(--c-blunder-text)]" data-testid="account-error">
             {error}
           </p>
         )}
