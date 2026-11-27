@@ -197,6 +197,10 @@ export const messages = {
     },
     pieces: { k: "Rey", q: "Dama", r: "Torre", b: "Alfil", n: "Caballo", p: "Peón" },
   },
+  pwa: {
+    offline:
+      "Sin conexión. Puedes seguir analizando partidas; importar, la cuenta y el historial necesitan red.",
+  },
   exportReport: {
     share: "Compartir",
     download: "Descargar imagen",

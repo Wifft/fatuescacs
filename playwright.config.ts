@@ -14,6 +14,9 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: "retain-on-failure",
+    // Requests made by a service worker bypass page.route(), so it is off by default and
+    // enabled only in tests/e2e/pwa.spec.ts.
+    serviceWorkers: "block",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
