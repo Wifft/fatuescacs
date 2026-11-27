@@ -21,7 +21,9 @@ import {
   sessionUser,
   verifySecret,
 } from "@/server/auth";
-import { openDb, type Db } from "@/server/db";
+import { DatabaseSync } from "node:sqlite";
+import { migrate, openDb, type Db } from "@/server/db";
+import { MIGRATIONS } from "@/server/migrations";
 
 let db: Db;
 beforeEach(() => {
@@ -37,12 +39,34 @@ const code = (p: Promise<unknown>) =>
 describe("schema", () => {
   it("applies migrations once (user_version)", () => {
     const v = db.prepare("PRAGMA user_version").get() as { user_version: number };
-    expect(v.user_version).toBe(1);
+    expect(v.user_version).toBe(MIGRATIONS.length);
     const tables = db
       .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
       .all()
       .map((r: unknown) => (r as { name: string }).name);
-    expect(tables).toEqual(["analyses", "sessions", "users"]);
+    expect(tables).toEqual(["analyses", "drills", "sessions", "users"]);
+  });
+
+  it("upgrades an existing v1 database without losing data", async () => {
+    const old = new DatabaseSync(":memory:");
+    old.exec("PRAGMA foreign_keys = ON;");
+    old.exec(MIGRATIONS[0]!);
+    old.exec("PRAGMA user_version = 1");
+    old
+      .prepare(
+        "INSERT INTO users (username, password_hash, recovery_hash, created_at) VALUES ('v1', 'x', 'y', 0)",
+      )
+      .run();
+    migrate(old);
+    expect(
+      (old.prepare("PRAGMA user_version").get() as { user_version: number }).user_version,
+    ).toBe(MIGRATIONS.length);
+    expect(old.prepare("SELECT username FROM users").get()).toEqual({ username: "v1" });
+    const cols = old
+      .prepare("PRAGMA table_info(analyses)")
+      .all()
+      .map((c: unknown) => (c as { name: string }).name);
+    expect(cols).toContain("user_color");
   });
 });
 

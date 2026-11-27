@@ -3,8 +3,10 @@ import { createHash } from "node:crypto";
 import type { Score } from "@/lib/chess/eval";
 import { parsePgn } from "@/lib/chess/pgn";
 import { buildReport } from "@/lib/chess/report";
+import type { StatsGame } from "@/lib/chess/stats";
 import type { PositionEval } from "@/lib/engine/uci";
 import type { Db } from "./db";
+import { syncDrills, type DrillCandidate } from "./drills";
 
 export const MAX_PGN_BYTES = 100_000;
 export const MAX_EVALS_BYTES = 1_000_000;
@@ -23,6 +25,8 @@ export interface SaveAnalysisInput {
   evals: PositionEval[];
   bookPlies?: number;
   opening?: { eco: string; name: string } | null;
+  /** Side the user played; null/undefined = didn't play (no drills, no stats). */
+  userColor?: "w" | "b" | null;
 }
 
 export interface AnalysisSummary {
@@ -33,6 +37,7 @@ export interface AnalysisSummary {
   date: string | null;
   result: string | null;
   opening: { eco: string; name: string } | null;
+  userColor: "w" | "b" | null;
   depth: number;
   accuracy: { w: number | null; b: number | null };
   counts: { w: Record<string, number>; b: Record<string, number> };
@@ -107,7 +112,31 @@ export function prepareAnalysis(body: unknown) {
     opening = { eco: o.eco, name: o.name };
   }
 
+  const userColor = b.userColor ?? null;
+  if (userColor !== null && userColor !== "w" && userColor !== "b") {
+    throw new ValidationError("userColor");
+  }
+
   const report = buildReport(game.moves, game.legalMoves, evals, { bookPlies });
+  // The user's mistakes and blunders become training drills.
+  const drills: DrillCandidate[] = [];
+  if (userColor) {
+    game.moves.forEach((m, i) => {
+      const c = report.classes[i];
+      const before = evals[i];
+      if (m.color !== userColor || !c || !before?.best) return;
+      if (c.cls !== "mistake" && c.cls !== "blunder") return;
+      drills.push({
+        ply: i + 1,
+        fen: m.fenBefore,
+        playedUci: m.uci,
+        bestUci: before.best,
+        bestPv: before.pv.length ? before.pv : [before.best],
+        cls: c.cls,
+        loss: c.loss,
+      });
+    });
+  }
   const h = game.headers;
   const clip = (s: string | undefined) => (s ? s.slice(0, MAX_TEXT) : null);
   return {
@@ -116,6 +145,8 @@ export function prepareAnalysis(body: unknown) {
     bookPlies,
     evals,
     opening,
+    userColor,
+    drills,
     white: clip(h.White),
     black: clip(h.Black),
     event: clip(h.Event),
@@ -131,17 +162,38 @@ export function saveAnalysis(db: Db, userId: number, body: unknown, now = Date.n
   const evalsJson = JSON.stringify(a.evals);
   if (Buffer.byteLength(evalsJson) > MAX_EVALS_BYTES) throw new ValidationError("evals-size");
   const pgnHash = createHash("sha256").update(a.pgn).digest("hex");
+  db.exec("BEGIN");
+  try {
+    const id = upsertAnalysis(db, userId, a, pgnHash, evalsJson, now);
+    syncDrills(db, userId, id, a.drills, now);
+    db.exec("COMMIT");
+    return id;
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
+  }
+}
+
+function upsertAnalysis(
+  db: Db,
+  userId: number,
+  a: ReturnType<typeof prepareAnalysis>,
+  pgnHash: string,
+  evalsJson: string,
+  now: number,
+): number {
   const row = db
     .prepare(
       `INSERT INTO analyses (user_id, pgn_hash, pgn, white, black, event, game_date, result,
          opening_eco, opening_name, depth, book_plies, accuracy_w, accuracy_b, counts, evals,
-         created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         user_color, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT (user_id, pgn_hash) DO UPDATE SET
          depth = excluded.depth, book_plies = excluded.book_plies,
          opening_eco = excluded.opening_eco, opening_name = excluded.opening_name,
          accuracy_w = excluded.accuracy_w, accuracy_b = excluded.accuracy_b,
-         counts = excluded.counts, evals = excluded.evals, updated_at = excluded.updated_at
+         counts = excluded.counts, evals = excluded.evals, user_color = excluded.user_color,
+         updated_at = excluded.updated_at
        RETURNING id`,
     )
     .get(
@@ -161,6 +213,7 @@ export function saveAnalysis(db: Db, userId: number, body: unknown, now = Date.n
       a.accuracy.b,
       JSON.stringify(a.counts),
       evalsJson,
+      a.userColor,
       now,
       now,
     ) as { id: number };
@@ -169,6 +222,7 @@ export function saveAnalysis(db: Db, userId: number, body: unknown, now = Date.n
 
 interface Row {
   id: number;
+  user_color: "w" | "b" | null;
   pgn: string;
   white: string | null;
   black: string | null;
@@ -195,6 +249,7 @@ function summary(r: Row): AnalysisSummary {
     date: r.game_date,
     result: r.result,
     opening: r.opening_eco && r.opening_name ? { eco: r.opening_eco, name: r.opening_name } : null,
+    userColor: r.user_color,
     depth: r.depth,
     accuracy: { w: r.accuracy_w, b: r.accuracy_b },
     counts: JSON.parse(r.counts) as AnalysisSummary["counts"],
@@ -206,7 +261,7 @@ export function listAnalyses(db: Db, userId: number, limit = 100): AnalysisSumma
   const rows = db
     .prepare(
       `SELECT id, pgn, white, black, event, game_date, result, opening_eco, opening_name, depth,
-         book_plies, accuracy_w, accuracy_b, counts, '[]' AS evals, updated_at
+         book_plies, accuracy_w, accuracy_b, counts, '[]' AS evals, user_color, updated_at
        FROM analyses WHERE user_id = ? ORDER BY updated_at DESC, id DESC LIMIT ?`,
     )
     .all(userId, limit) as unknown as Row[];
@@ -230,4 +285,31 @@ export function deleteAnalysis(db: Db, userId: number, id: number): boolean {
   return (
     db.prepare("DELETE FROM analyses WHERE id = ? AND user_id = ?").run(id, userId).changes > 0
   );
+}
+
+/** Saved games where the user played, ready for `computeStats`. */
+export function statsGames(db: Db, userId: number, limit = 500): StatsGame[] {
+  const rows = db
+    .prepare(
+      `SELECT pgn, evals, book_plies, user_color, opening_eco, opening_name, result
+       FROM analyses WHERE user_id = ? AND user_color IS NOT NULL
+       ORDER BY updated_at DESC LIMIT ?`,
+    )
+    .all(userId, limit) as unknown as {
+    pgn: string;
+    evals: string;
+    book_plies: number;
+    user_color: "w" | "b";
+    opening_eco: string | null;
+    opening_name: string | null;
+    result: string | null;
+  }[];
+  return rows.map((r) => ({
+    pgn: r.pgn,
+    evals: JSON.parse(r.evals) as PositionEval[],
+    bookPlies: r.book_plies,
+    userColor: r.user_color,
+    opening: r.opening_eco && r.opening_name ? { eco: r.opening_eco, name: r.opening_name } : null,
+    result: r.result,
+  }));
 }
