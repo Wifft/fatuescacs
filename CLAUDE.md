@@ -77,7 +77,7 @@ Analizador de partidas de ajedrez en el navegador. La especificación completa (
   - los errores se agrupan por tipo de explicación, por fase y por pieza.
 - **e2e:** para arrastrar piezas en react-chessboard (dnd-kit) hay que mover el ratón en varios pasos (`page.mouse`); `dragTo` no basta. Las casillas llevan `data-square`. `registerUser` está en `tests/e2e/helpers.ts`: no importar entre specs.
 
-## Fase 4 (en curso)
+## Fase 4
 
 - **Accesibilidad:** los textos con color de clase usan las variables `--c-*-text` (AA ≥ 4.5:1); las marcas usan `--c-*`. El tablero del análisis es `inert`, con una descripción textual (`lib/chess/describe.ts`). En el entrenamiento, `usePieceLabels` da nombre a las piezas de react-chessboard y se puede escribir la jugada. Los formularios renderizados en el servidor quedan en `<fieldset disabled>` hasta hidratar (`useHydrated`). axe corre en `tests/e2e/a11y.spec.ts`.
 - **PWA:** `app/manifest.ts` y `public/sw.js`, escrito a mano. En los e2e el service worker está bloqueado, salvo en `pwa.spec.ts`.
@@ -90,6 +90,16 @@ Analizador de partidas de ajedrez en el navegador. La especificación completa (
   Con `go depth`, más hilos (Lazy SMP) tardan más en llegar a la misma profundidad. La mejora del 11 % no justifica exigir COOP/COEP.
 
 - **Docker:** el `Dockerfile` no se ha podido probar aquí porque no hay Docker instalado.
+- **Lighthouse:** `pnpm lighthouse [url]` hace 3 pasadas por ruta y saca la mediana; falla si algo queda por debajo de 90. Medido el 2026-11-27 con Edge ARM64 nativo:
+  - `/`: 97;
+  - `/analysis`: 93;
+  - `/import`: 99;
+  - accesibilidad, buenas prácticas y SEO: 100 en las tres.
+- **Ojo en Windows ARM:** el Chromium de Playwright es x86-64 y va emulado (benchmarkIndex ≈ 400, contra ≈ 1200 nativo), lo que hunde las cifras de rendimiento. El script usa Edge ARM64 si existe, o `CHROME_PATH`.
+- **Rendimiento de /analysis:**
+  - las líneas de la cabecera y los botones de exportar se renderizan desde el principio, para evitar el CLS (era 0,245);
+  - las evaluaciones se agrupan en el store (`setEvals`, una actualización cada 150 ms como mucho) para reducir el TBT.
+- **e2e:** `workers: 4` en local, `expect.timeout` de 10 s, porque cada análisis corre un motor real.
 
 ## Motor
 

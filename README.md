@@ -2,7 +2,7 @@
 
 Aplicación web que analiza tus partidas de ajedrez con Stockfish y te explica dónde te equivocaste. El motor corre **en tu navegador** (WebAssembly en un Web Worker): el servidor nunca analiza nada y tus partidas no salen de tu equipo.
 
-> Estado: **fase 3**. Analiza un PGN o importa tus partidas de Lichess y Chess.com, con la apertura identificada y una explicación automática de cada error basada en las líneas del motor. Con cuenta (opcional), guarda tus análisis, entrena con tus propios errores (repetición espaciada) y consulta tus estadísticas. La prueba de concepto original está en [`poc/index.html`](poc/index.html).
+> Estado: **fase 4** (PWA instalable, análisis sin conexión, exportar informe, accesibilidad AA). Analiza un PGN o importa tus partidas de Lichess y Chess.com, con la apertura identificada y una explicación automática de cada error basada en las líneas del motor. Con cuenta (opcional), guarda tus análisis, entrena con tus propios errores (repetición espaciada) y consulta tus estadísticas. La prueba de concepto original está en [`poc/index.html`](poc/index.html).
 
 ## Requisitos
 
@@ -40,20 +40,21 @@ SQLite vive en el volumen `/data`. Sirve la app detrás de HTTPS: en producción
 
 ## Comandos
 
-| Comando                | Qué hace                                                         |
-| ---------------------- | ---------------------------------------------------------------- |
-| `pnpm dev`             | Servidor de desarrollo                                           |
-| `pnpm build`           | Build de producción                                              |
-| `pnpm start`           | Sirve la build de producción                                     |
-| `pnpm lint`            | ESLint                                                           |
-| `pnpm format`          | Formatea con Prettier (`format:check` solo comprueba)            |
-| `pnpm typecheck`       | Genera los tipos de rutas y ejecuta `tsc --noEmit`               |
-| `pnpm test`            | Tests unitarios (Vitest)                                         |
-| `pnpm test:e2e`        | Tests end-to-end (Playwright; hace build y arranca)              |
-| `pnpm golden:record`   | Regraba las evaluaciones de los golden tests (Stockfish en Node) |
-| `pnpm golden:expected` | Regenera los resultados esperados de los golden tests            |
-| `pnpm bench`           | Mide el análisis de una partida de 41 jugadas en Chromium        |
-| `pnpm openings:build`  | Regenera `public/openings.json` desde lichess-org/chess-openings |
+| Comando                | Qué hace                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| `pnpm dev`             | Servidor de desarrollo                                                         |
+| `pnpm build`           | Build de producción                                                            |
+| `pnpm start`           | Sirve la build de producción                                                   |
+| `pnpm lint`            | ESLint                                                                         |
+| `pnpm format`          | Formatea con Prettier (`format:check` solo comprueba)                          |
+| `pnpm typecheck`       | Genera los tipos de rutas y ejecuta `tsc --noEmit`                             |
+| `pnpm test`            | Tests unitarios (Vitest)                                                       |
+| `pnpm test:e2e`        | Tests end-to-end (Playwright; hace build y arranca)                            |
+| `pnpm golden:record`   | Regraba las evaluaciones de los golden tests (Stockfish en Node)               |
+| `pnpm golden:expected` | Regenera los resultados esperados de los golden tests                          |
+| `pnpm bench`           | Mide el análisis de una partida de 41 jugadas en Chromium                      |
+| `pnpm lighthouse`      | Lighthouse (mediana de 3) contra un servidor arrancado; falla por debajo de 90 |
+| `pnpm openings:build`  | Regenera `public/openings.json` desde lichess-org/chess-openings               |
 
 La primera vez que lances los e2e: `pnpm exec playwright install chromium`.
 

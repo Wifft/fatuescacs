@@ -5,6 +5,8 @@ const PORT = 3100;
 export default defineConfig({
   testDir: "tests/e2e",
   timeout: 60_000,
+  // Engines run in parallel workers and load the CPU: give UI assertions a bit more room.
+  expect: { timeout: 10_000 },
   fullyParallel: true,
   // Every analysis runs a real engine: cap parallelism so tests don't starve each other.
   workers: process.env.CI ? 1 : 4,
