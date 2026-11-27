@@ -25,8 +25,14 @@ export interface AnalysisMetrics {
   cacheHits: number;
 }
 
-/** In-memory cache by `FEN + depth`. Phase 2 swaps this for IndexedDB. */
-export class EvalCache {
+/** Evaluation cache by `FEN + depth`. Implementations may be async (IndexedDB). */
+export interface EvalStore {
+  get(fen: string, depth: number): Promise<PositionEval | undefined> | PositionEval | undefined;
+  set(fen: string, depth: number, e: PositionEval): Promise<void> | void;
+}
+
+/** In-memory cache by `FEN + depth`. */
+export class EvalCache implements EvalStore {
   private map = new Map<string, PositionEval>();
   private key = (fen: string, depth: number) => `${fen}|${depth}`;
   get(fen: string, depth: number): PositionEval | undefined {
@@ -44,7 +50,7 @@ export interface AnalyzeOptions {
   engine: AnalysisEngine;
   fens: readonly string[];
   depth: number;
-  cache?: EvalCache;
+  cache?: EvalStore;
   signal?: AbortSignal;
   /** Called every time a position gets a (better) evaluation. */
   onEval?: (index: number, evaluation: PositionEval, phase: Exclude<AnalysisPhase, "done">) => void;
@@ -83,7 +89,7 @@ export async function analyzeGame(opts: AnalyzeOptions): Promise<AnalysisMetrics
       if (signal?.aborted) throw new AbortError();
       onProgress?.({ done: i, total, phase: pass.phase, depth: pass.depth });
       const fen = fens[i] as string;
-      let e = cache.get(fen, pass.depth);
+      let e = await cache.get(fen, pass.depth);
       if (e) {
         if (pass.phase === "full") cacheHits++;
       } else {
@@ -96,7 +102,7 @@ export async function analyzeGame(opts: AnalyzeOptions): Promise<AnalysisMetrics
             npsN++;
           }
         }
-        cache.set(fen, pass.depth, e);
+        await cache.set(fen, pass.depth, e);
       }
       onEval?.(i, e, pass.phase);
     }

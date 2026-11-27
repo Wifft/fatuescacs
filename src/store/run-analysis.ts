@@ -1,11 +1,13 @@
 "use client";
 
-import { analyzeGame, EvalCache } from "@/lib/engine/analyzer";
+import { analyzeGame } from "@/lib/engine/analyzer";
+import { IdbEvalCache } from "@/lib/engine/idb-cache";
 import { getBrowserEngine } from "@/lib/engine/browser";
 import { isAbortError } from "@/lib/engine/engine";
 import { useAnalysis } from "./analysis";
 
-const cache = new EvalCache();
+// Persistent across reloads (IndexedDB), with an in-memory layer.
+let cache: IdbEvalCache | null = null;
 let current: AbortController | null = null;
 let running: Promise<unknown> | null = null;
 
@@ -43,7 +45,7 @@ export async function runAnalysis(): Promise<void> {
       engine: booted.engine,
       fens: game.fens,
       depth,
-      cache,
+      cache: (cache ??= new IdbEvalCache()),
       signal: ctrl.signal,
       onEval: (i, e) => {
         if (!ctrl.signal.aborted) useAnalysis.getState().setEval(i, e);
