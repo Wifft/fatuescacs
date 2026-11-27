@@ -9,6 +9,8 @@ const LINKS = [
   { href: "/", label: t.home },
   { href: "/import", label: t.import },
   { href: "/historial", label: t.history },
+  { href: "/entrenar", label: t.train },
+  { href: "/estadisticas", label: t.stats },
   { href: "/cuenta", label: t.account },
 ] as const;
 
