@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import type { Notation } from "@/lib/chess/notation";
+import type { OpeningInfo } from "@/lib/chess/openings";
 import type { ParsedGame } from "@/lib/chess/pgn";
 import type { AnalysisMetrics, AnalysisProgress } from "@/lib/engine/analyzer";
 import type { EngineBuild } from "@/lib/engine/boot";
@@ -30,8 +31,11 @@ export interface AnalysisState {
   engine: EngineInfo | null;
   progress: AnalysisProgress | null;
   metrics: AnalysisMetrics | null;
+  /** Opening + book length; null until the opening table is loaded. */
+  opening: OpeningInfo | null;
 
   setGame(game: ParsedGame): void;
+  setOpening(game: ParsedGame, info: OpeningInfo): void;
   setEval(index: number, e: PositionEval): void;
   goTo(ply: number): void;
   step(delta: number): void;
@@ -78,6 +82,7 @@ export const useAnalysis = create<AnalysisState>()((set, get) => ({
   engine: null,
   progress: null,
   metrics: null,
+  opening: null,
 
   setGame: (game) =>
     set({
@@ -86,7 +91,12 @@ export const useAnalysis = create<AnalysisState>()((set, get) => ({
       ply: 0,
       progress: null,
       metrics: null,
+      opening: null,
     }),
+  setOpening: (game, opening) => {
+    // Ignore late results for a game that is no longer shown.
+    if (get().game === game) set({ opening });
+  },
   setEval: (index, e) =>
     set((s) => {
       if (index < 0 || index >= s.evals.length) return s;

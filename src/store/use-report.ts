@@ -17,8 +17,9 @@ const EMPTY: GameReport = {
 export function useReport(): GameReport {
   const game = useAnalysis((s) => s.game);
   const evals = useAnalysis((s) => s.evals);
+  const bookPlies = useAnalysis((s) => s.opening?.bookPlies ?? 0);
   return useMemo(
-    () => (game ? buildReport(game.moves, game.legalMoves, evals) : EMPTY),
-    [game, evals],
+    () => (game ? buildReport(game.moves, game.legalMoves, evals, { bookPlies }) : EMPTY),
+    [game, evals, bookPlies],
   );
 }

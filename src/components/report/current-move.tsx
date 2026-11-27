@@ -74,7 +74,7 @@ export function CurrentMove() {
             {messages.classes[c.cls].label}
           </b>
           {c.reason && <span> · {t.reasons[c.reason]}</span>}
-          {c.loss >= 1 && c.cls !== "forced" && (
+          {c.loss >= 1 && c.cls !== "forced" && c.cls !== "book" && (
             <span>
               {" "}
               · {t.lossPrefix} {c.loss.toFixed(0)} {t.lossSuffix}

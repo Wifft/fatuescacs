@@ -82,7 +82,7 @@ export function EvalGraph() {
 }
 
 export function ClassLegend() {
-  const items = ["best", "good", "inaccuracy", "mistake", "blunder"] as const;
+  const items = ["book", "best", "good", "inaccuracy", "mistake", "blunder"] as const;
   return (
     <ul className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-muted">
       {items.map((k) => (
