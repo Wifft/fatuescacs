@@ -13,3 +13,4 @@ LICENSE
 tests/golden/evals/
 public/openings.json
 .e2e/
+src/generated/

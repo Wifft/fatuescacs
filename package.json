@@ -13,11 +13,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "postinstall": "node scripts/copy-engine.mjs",
+    "postinstall": "node scripts/copy-engine.mjs && node scripts/build-licenses.mjs",
     "golden:record": "tsx scripts/record-golden.mts record",
     "golden:expected": "tsx scripts/record-golden.mts expected",
     "bench": "node scripts/bench.mjs",
-    "openings:build": "tsx scripts/build-openings.mts"
+    "openings:build": "tsx scripts/build-openings.mts",
+    "prebuild": "node scripts/build-licenses.mjs"
   },
   "dependencies": {
     "chess.js": "1.4.0",

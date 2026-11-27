@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/entrenar", label: t.train },
   { href: "/estadisticas", label: t.stats },
   { href: "/cuenta", label: t.account },
+  { href: "/acerca", label: t.about },
 ] as const;
 
 export function SiteNav() {
