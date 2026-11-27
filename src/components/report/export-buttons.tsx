@@ -32,8 +32,8 @@ export function ExportButtons() {
   const { classes, accuracy, counts } = useReport();
   const [state, setState] = useState<"idle" | "busy" | "copied" | "error">("idle");
 
-  if (!game) return null;
-  const h = game.headers;
+  // Rendered (disabled) before the game loads so the header keeps its height (no layout shift).
+  const h = game?.headers ?? {};
   const title = `${h.White ?? messages.analysis.white} – ${h.Black ?? messages.analysis.black}`;
 
   const cardData = (): ReportCardData => ({
@@ -93,12 +93,12 @@ export function ExportButtons() {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Button onClick={share} data-testid="share">
+      <Button onClick={share} disabled={!game} data-testid="share">
         {state === "copied" ? messages.analysis.copied : t.share}
       </Button>
       <Button
         onClick={download}
-        disabled={!done || state === "busy"}
+        disabled={!game || !done || state === "busy"}
         title={done ? undefined : t.waitAnalysis}
         data-testid="download-image"
       >

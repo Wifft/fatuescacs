@@ -4,6 +4,7 @@ import { analyzeGame } from "@/lib/engine/analyzer";
 import { IdbEvalCache } from "@/lib/engine/idb-cache";
 import { getBrowserEngine } from "@/lib/engine/browser";
 import { isAbortError } from "@/lib/engine/engine";
+import type { PositionEval } from "@/lib/engine/uci";
 import { useAnalysis } from "./analysis";
 
 // Persistent across reloads (IndexedDB), with an in-memory layer.
@@ -44,6 +45,7 @@ export async function runAnalysis(): Promise<void> {
     const s = useAnalysis.getState();
     s.setEngine("ready", { name: booted.name, build: booted.build, loadMs: booted.loadMs });
     s.setMetrics(null);
+    const batch = evalBatcher(() => ctrl.signal.aborted);
 
     const metrics = await analyzeGame({
       engine: booted.engine,
@@ -52,12 +54,13 @@ export async function runAnalysis(): Promise<void> {
       cache: getEvalCache(),
       signal: ctrl.signal,
       onEval: (i, e) => {
-        if (!ctrl.signal.aborted) useAnalysis.getState().setEval(i, e);
+        if (!ctrl.signal.aborted) batch.push(i, e);
       },
       onProgress: (p) => {
         if (!ctrl.signal.aborted) useAnalysis.getState().setProgress(p);
       },
     });
+    batch.flush();
     if (!ctrl.signal.aborted) useAnalysis.getState().setMetrics(metrics);
   })();
 
@@ -73,4 +76,26 @@ export async function runAnalysis(): Promise<void> {
 
 export function cancelAnalysis() {
   current?.abort();
+}
+
+/** Evaluations arrive every few ms from the cache: group them into one store update per frame
+ * window so the board, move list and curve re-render at most ~7 times per second. */
+const FLUSH_MS = 150;
+function evalBatcher(aborted: () => boolean) {
+  let pending: [number, PositionEval][] = [];
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  const flush = () => {
+    if (timer) clearTimeout(timer);
+    timer = null;
+    const updates = pending;
+    pending = [];
+    if (!aborted()) useAnalysis.getState().setEvals(updates);
+  };
+  return {
+    push(i: number, e: PositionEval) {
+      pending.push([i, e]);
+      timer ??= setTimeout(flush, FLUSH_MS);
+    },
+    flush,
+  };
 }

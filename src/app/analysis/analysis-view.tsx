@@ -107,12 +107,12 @@ export function AnalysisView() {
       <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-2xl leading-tight font-bold text-balance sm:text-3xl">{title}</h1>
-          {sub && <p className="text-[15px] text-muted">{sub}</p>}
-          {opening && (
-            <p className="text-[15px] text-muted" data-testid="opening">
-              {opening.eco} · {opening.name}
-            </p>
-          )}
+          {/* Both lines always take their space: they fill in after the PGN and the opening
+              table load, and must not push the board down (CLS). */}
+          <p className="min-h-[1.5em] truncate text-[15px] text-muted">{sub}</p>
+          <p className="min-h-[1.5em] truncate text-[15px] text-muted" data-testid="opening">
+            {opening ? `${opening.eco} · ${opening.name}` : ""}
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link
