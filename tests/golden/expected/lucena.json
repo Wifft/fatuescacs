@@ -1,0 +1,25 @@
+{
+  "moves": [
+    "1. Rd1+ best 0.0",
+    "1... Ke7 best 0.0",
+    "2. Rd4 best 0.0",
+    "2... Rb2 good 2.8",
+    "3. Kc7 best 0.0",
+    "3... Rc2+ best 0.6",
+    "4. Kb6 best 0.0",
+    "4... Rb2+ best 0.7",
+    "5. Kc6 best 0.0",
+    "5... Rc2+ good 0.0",
+    "6. Kb5 best 0.0",
+    "6... Rb2+ best 0.3",
+    "7. Rb4 best 0.0",
+    "7... Rxb4+ good 0.0",
+    "8. Kxb4 best 0.0",
+    "8... Kd7 good 0.0",
+    "9. b8=Q best 0.0"
+  ],
+  "accuracy": {
+    "w": 100,
+    "b": 96.7
+  }
+}

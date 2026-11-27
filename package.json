@@ -13,7 +13,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "postinstall": "node scripts/copy-engine.mjs"
+    "postinstall": "node scripts/copy-engine.mjs",
+    "golden:record": "tsx scripts/record-golden.mts record",
+    "golden:expected": "tsx scripts/record-golden.mts expected"
   },
   "dependencies": {
     "chess.js": "1.4.0",
@@ -36,6 +38,7 @@
     "eslint-config-prettier": "^10.1.9",
     "prettier": "^3.10.1",
     "tailwindcss": "4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.1.2"
   },

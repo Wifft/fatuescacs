@@ -1,0 +1,15 @@
+{
+  "moves": [
+    "1. e4 best 0.0",
+    "1... e5 best 0.0",
+    "2. Bc4 good 1.8",
+    "2... Nc6 good 1.6",
+    "3. Qh5 good 4.9",
+    "3... Nf6 blunder 52.9",
+    "4. Qxf7# best 0.0"
+  ],
+  "accuracy": {
+    "w": 89.8,
+    "b": 17.2
+  }
+}

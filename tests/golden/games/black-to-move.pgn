@@ -1,0 +1,8 @@
+[Event "Custom"]
+[White "Aficionado A"]
+[Black "Aficionado B"]
+[SetUp "1"]
+[FEN "6k1/5ppp/8/8/8/8/5PPP/3R2K1 b - - 0 30"]
+[Result "*"]
+
+30... h6 31. Rd8+ Kh7 *

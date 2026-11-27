@@ -1,0 +1,19 @@
+{
+  "moves": [
+    "1. e4 best 0.0",
+    "1... Nf6 good 3.3",
+    "2. e5 best 0.2",
+    "2... d5 blunder 30.6",
+    "3. exd6 blunder 43.1",
+    "3... Nc6 good 4.6",
+    "4. dxc7 best 0.0",
+    "4... Nd5 blunder 49.0",
+    "5. cxd8=Q+ best 0.3",
+    "5... Kxd8 best 0.0",
+    "6. Nf3 good 0.0"
+  ],
+  "accuracy": {
+    "w": 37,
+    "b": 27.1
+  }
+}
