@@ -1,0 +1,12 @@
+.next/
+out/
+build/
+coverage/
+node_modules/
+pnpm-lock.yaml
+public/engine/
+poc/
+playwright-report/
+test-results/
+next-env.d.ts
+LICENSE
