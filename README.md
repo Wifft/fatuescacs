@@ -2,7 +2,7 @@
 
 Aplicación web que analiza tus partidas de ajedrez con Stockfish y te explica dónde te equivocaste. El motor corre **en tu navegador** (WebAssembly en un Web Worker): el servidor nunca analiza nada y tus partidas no salen de tu equipo.
 
-> Estado: **fase 0 (cimientos)**. El análisis de partidas llega en la fase 1. La prueba de concepto original está en [`poc/index.html`](poc/index.html).
+> Estado: **fase 1 (MVP de análisis)**. Pega un PGN, analízalo con Stockfish y revisa la precisión, los errores y la curva de la partida. La prueba de concepto original está en [`poc/index.html`](poc/index.html).
 
 ## Requisitos
 
@@ -16,20 +16,23 @@ pnpm install        # el postinstall copia el motor a public/engine/
 pnpm dev            # http://localhost:3000
 ```
 
-Abre <http://localhost:3000/dev/engine> para comprobar que Stockfish arranca (debe mostrar `readyok`).
+Abre <http://localhost:3000>, pega una partida y pulsa «Analizar». En <http://localhost:3000/dev/engine> puedes comprobar que Stockfish arranca (debe mostrar `readyok`).
 
 ## Comandos
 
-| Comando          | Qué hace                                              |
-| ---------------- | ----------------------------------------------------- |
-| `pnpm dev`       | Servidor de desarrollo                                |
-| `pnpm build`     | Build de producción                                   |
-| `pnpm start`     | Sirve la build de producción                          |
-| `pnpm lint`      | ESLint                                                |
-| `pnpm format`    | Formatea con Prettier (`format:check` solo comprueba) |
-| `pnpm typecheck` | Genera los tipos de rutas y ejecuta `tsc --noEmit`    |
-| `pnpm test`      | Tests unitarios (Vitest)                              |
-| `pnpm test:e2e`  | Tests end-to-end (Playwright; hace build y arranca)   |
+| Comando                | Qué hace                                                         |
+| ---------------------- | ---------------------------------------------------------------- |
+| `pnpm dev`             | Servidor de desarrollo                                           |
+| `pnpm build`           | Build de producción                                              |
+| `pnpm start`           | Sirve la build de producción                                     |
+| `pnpm lint`            | ESLint                                                           |
+| `pnpm format`          | Formatea con Prettier (`format:check` solo comprueba)            |
+| `pnpm typecheck`       | Genera los tipos de rutas y ejecuta `tsc --noEmit`               |
+| `pnpm test`            | Tests unitarios (Vitest)                                         |
+| `pnpm test:e2e`        | Tests end-to-end (Playwright; hace build y arranca)              |
+| `pnpm golden:record`   | Regraba las evaluaciones de los golden tests (Stockfish en Node) |
+| `pnpm golden:expected` | Regenera los resultados esperados de los golden tests            |
+| `pnpm bench`           | Mide el análisis de una partida de 41 jugadas en Chromium        |
 
 La primera vez que lances los e2e: `pnpm exec playwright install chromium`.
 
