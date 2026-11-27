@@ -23,6 +23,11 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Opening table (scripts/build-openings.mts), ~85 KB gzip, loaded lazily.
+        source: "/openings.json",
+        headers: [{ key: "Cache-Control", value: "public, max-age=86400" }],
+      },
+      {
         source: "/engine/:file*.js",
         headers: [{ key: "Cache-Control", value: "public, max-age=86400" }],
       },

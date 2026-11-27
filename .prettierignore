@@ -11,3 +11,5 @@ test-results/
 next-env.d.ts
 LICENSE
 tests/golden/evals/
+public/openings.json
+.e2e/

@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import type { Notation } from "@/lib/chess/notation";
+import type { OpeningInfo } from "@/lib/chess/openings";
 import type { ParsedGame } from "@/lib/chess/pgn";
 import type { AnalysisMetrics, AnalysisProgress } from "@/lib/engine/analyzer";
 import type { EngineBuild } from "@/lib/engine/boot";
@@ -20,6 +21,8 @@ export interface EngineInfo {
 
 export interface AnalysisState {
   game: ParsedGame | null;
+  /** Original PGN text of the game (what gets shared and saved). */
+  pgn: string | null;
   /** evals[i] evaluates game.fens[i]; refined in place by the second pass. */
   evals: (PositionEval | null)[];
   ply: number;
@@ -30,8 +33,11 @@ export interface AnalysisState {
   engine: EngineInfo | null;
   progress: AnalysisProgress | null;
   metrics: AnalysisMetrics | null;
+  /** Opening + book length; null until the opening table is loaded. */
+  opening: OpeningInfo | null;
 
-  setGame(game: ParsedGame): void;
+  setGame(game: ParsedGame, pgn?: string): void;
+  setOpening(game: ParsedGame, info: OpeningInfo): void;
   setEval(index: number, e: PositionEval): void;
   goTo(ply: number): void;
   step(delta: number): void;
@@ -69,6 +75,7 @@ function writePref(key: string, value: string) {
 
 export const useAnalysis = create<AnalysisState>()((set, get) => ({
   game: null,
+  pgn: null,
   evals: [],
   ply: 0,
   orientation: "white",
@@ -78,15 +85,22 @@ export const useAnalysis = create<AnalysisState>()((set, get) => ({
   engine: null,
   progress: null,
   metrics: null,
+  opening: null,
 
-  setGame: (game) =>
+  setGame: (game, pgn) =>
     set({
       game,
+      pgn: pgn ?? null,
       evals: Array.from({ length: game.fens.length }, () => null),
       ply: 0,
       progress: null,
       metrics: null,
+      opening: null,
     }),
+  setOpening: (game, opening) => {
+    // Ignore late results for a game that is no longer shown.
+    if (get().game === game) set({ opening });
+  },
   setEval: (index, e) =>
     set((s) => {
       if (index < 0 || index >= s.evals.length) return s;

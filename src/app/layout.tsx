@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { SiteNav } from "@/components/site-nav";
 import { messages } from "@/messages/es";
 import "./globals.css";
 
@@ -15,7 +16,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="es" className="h-full antialiased">
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <SiteNav />
+        {children}
+      </body>
     </html>
   );
 }

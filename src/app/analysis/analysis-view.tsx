@@ -7,9 +7,11 @@ import { MoveList } from "@/components/moves/move-list";
 import { AccuracySummary } from "@/components/report/accuracy-summary";
 import { AnalysisProgress, Diagnostics } from "@/components/report/analysis-progress";
 import { CurrentMove } from "@/components/report/current-move";
+import { SaveButton } from "@/components/report/save-button";
 import { ClassLegend, EvalGraph } from "@/components/report/eval-graph";
 import { Button, Select } from "@/components/ui";
 import type { Notation } from "@/lib/chess/notation";
+import { identifyOpening, loadOpeningTable } from "@/lib/chess/openings";
 import { parsePgn, PgnError } from "@/lib/chess/pgn";
 import { decodePgnHash } from "@/lib/share";
 import { messages, pgnErrorMessage } from "@/messages/es";
@@ -23,18 +25,26 @@ type LoadState = { status: "loading" } | { status: "ok" } | { status: "error"; m
 function loadFromHash(): LoadState {
   const pgn = decodePgnHash(window.location.hash);
   if (!pgn) return { status: "error", message: window.location.hash ? t.badLink : t.noGame };
+  let game;
   try {
-    useAnalysis.getState().setGame(parsePgn(pgn));
+    game = parsePgn(pgn);
   } catch (err) {
     return { status: "error", message: err instanceof PgnError ? pgnErrorMessage(err) : t.badLink };
   }
+  useAnalysis.getState().setGame(game, pgn);
   void runAnalysis();
+  loadOpeningTable()
+    .then((table) => useAnalysis.getState().setOpening(game, identifyOpening(game.fens, table)))
+    .catch(() => {
+      /* no opening data: the analysis works without it */
+    });
   return { status: "ok" };
 }
 
 export function AnalysisView() {
   const [load, setLoad] = useState<LoadState>({ status: "loading" });
   const headers = useAnalysis((s) => s.game?.headers);
+  const opening = useAnalysis((s) => s.opening?.opening);
   const notation = useAnalysis((s) => s.notation);
   const depth = useAnalysis((s) => s.depth);
   const [copied, setCopied] = useState(false);
@@ -98,6 +108,11 @@ export function AnalysisView() {
         <div className="min-w-0">
           <h1 className="text-2xl leading-tight font-bold text-balance sm:text-3xl">{title}</h1>
           {sub && <p className="text-[15px] text-muted">{sub}</p>}
+          {opening && (
+            <p className="text-[15px] text-muted" data-testid="opening">
+              {opening.eco} · {opening.name}
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link
@@ -156,6 +171,7 @@ export function AnalysisView() {
 
         <div className="grid gap-4">
           <AccuracySummary />
+          <SaveButton />
           <CurrentMove />
           <AnalysisProgress />
           <MoveList />

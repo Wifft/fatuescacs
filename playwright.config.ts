@@ -19,5 +19,7 @@ export default defineConfig({
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 240_000,
+    // Throwaway database for e2e runs (gitignored).
+    env: { DB_PATH: ".e2e/e2e.db" },
   },
 });
