@@ -2,7 +2,7 @@
 
 Aplicación web que analiza tus partidas de ajedrez con Stockfish y te explica dónde te equivocaste. El motor corre **en tu navegador** (WebAssembly en un Web Worker): el servidor nunca analiza nada y tus partidas no salen de tu equipo.
 
-> Estado: **fase 1 (MVP de análisis)**. Pega un PGN, analízalo con Stockfish y revisa la precisión, los errores y la curva de la partida. La prueba de concepto original está en [`poc/index.html`](poc/index.html).
+> Estado: **fase 2 (importación, aperturas e historial)**. Analiza un PGN o importa tus partidas de Lichess y Chess.com, identifica la apertura y guarda tus análisis en una cuenta (opcional). La prueba de concepto original está en [`poc/index.html`](poc/index.html).
 
 ## Requisitos
 
@@ -16,7 +16,18 @@ pnpm install        # el postinstall copia el motor a public/engine/
 pnpm dev            # http://localhost:3000
 ```
 
-Abre <http://localhost:3000>, pega una partida y pulsa «Analizar». En <http://localhost:3000/dev/engine> puedes comprobar que Stockfish arranca (debe mostrar `readyok`).
+Abre <http://localhost:3000>, pega una partida y pulsa «Analizar», o importa tus partidas en «Importar». En <http://localhost:3000/dev/engine> puedes comprobar que Stockfish arranca (debe mostrar `readyok`).
+
+## Datos y configuración
+
+Las cuentas y el historial se guardan en un fichero SQLite (`node:sqlite`, incluido en Node 26; sin servicios externos). El servidor debe ejecutarse como un proceso Node persistente con disco escribible.
+
+| Variable           | Por defecto          | Para qué                                                               |
+| ------------------ | -------------------- | ---------------------------------------------------------------------- |
+| `DB_PATH`          | `data/fatuescacs.db` | Ruta del fichero SQLite (se crea solo, con sus migraciones)            |
+| `INSECURE_COOKIES` | —                    | `1` para servir la build de producción por HTTP sin TLS (solo pruebas) |
+
+Se guardan nombres de usuario, hashes de contraseña (scrypt) y los análisis que cada usuario decide guardar. No se guardan emails.
 
 ## Comandos
 
@@ -33,6 +44,7 @@ Abre <http://localhost:3000>, pega una partida y pulsa «Analizar». En <http://
 | `pnpm golden:record`   | Regraba las evaluaciones de los golden tests (Stockfish en Node) |
 | `pnpm golden:expected` | Regenera los resultados esperados de los golden tests            |
 | `pnpm bench`           | Mide el análisis de una partida de 41 jugadas en Chromium        |
+| `pnpm openings:build`  | Regenera `public/openings.json` desde lichess-org/chess-openings |
 
 La primera vez que lances los e2e: `pnpm exec playwright install chromium`.
 
@@ -42,3 +54,4 @@ Este proyecto es software libre bajo la licencia **GPL-3.0** (ver [`LICENSE`](LI
 
 - [Stockfish](https://stockfishchess.org/) — motor de ajedrez, © los desarrolladores de Stockfish, GPL-3.0.
 - [stockfish.js](https://github.com/nmrugg/stockfish.js) — port de Stockfish a WebAssembly/JavaScript, de Nathan Rugg y Chess.com, GPL-3.0. Se distribuye sin modificar desde el paquete npm `stockfish`.
+- [lichess-org/chess-openings](https://github.com/lichess-org/chess-openings) — nombres y códigos ECO de aperturas, CC0-1.0.
