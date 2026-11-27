@@ -1,5 +1,24 @@
 // Browser client for our own API (same origin; the session travels in an httpOnly cookie).
+import type { Stats } from "./chess/stats";
 import type { PositionEval } from "./engine/uci";
+
+export interface ApiDrill {
+  id: number;
+  analysisId: number;
+  ply: number;
+  fen: string;
+  playedUci: string;
+  bestUci: string;
+  bestPv: string[];
+  cls: string;
+  loss: number;
+  box: number;
+  dueAt: number;
+  reviews: number;
+  lastCorrect: boolean | null;
+  white: string | null;
+  black: string | null;
+}
 
 export interface ApiUser {
   id: number;
@@ -14,6 +33,7 @@ export interface SavedAnalysisSummary {
   date: string | null;
   result: string | null;
   opening: { eco: string; name: string } | null;
+  userColor: "w" | "b" | null;
   depth: number;
   accuracy: { w: number | null; b: number | null };
   counts: {
@@ -85,6 +105,17 @@ export const api = {
     evals: PositionEval[];
     bookPlies: number;
     opening: { eco: string; name: string } | null;
+    userColor: "w" | "b" | null;
   }) => call<{ id: number }>("/api/analyses", { method: "POST", body }).then((r) => r.id),
+  stats: () => call<{ stats: Stats }>("/api/stats").then((r) => r.stats),
+  dueDrills: () =>
+    call<{ drills: ApiDrill[]; total: number; due: number; nextDueAt: number | null }>(
+      "/api/drills",
+    ),
+  answerDrill: (id: number, correct: boolean) =>
+    call<{ drill: ApiDrill }>(`/api/drills/${id}/answer`, {
+      method: "POST",
+      body: { correct },
+    }).then((r) => r.drill),
   deleteAnalysis: (id: number) => call<{ ok: true }>(`/api/analyses/${id}`, { method: "DELETE" }),
 };

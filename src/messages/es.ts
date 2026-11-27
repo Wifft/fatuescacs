@@ -1,5 +1,8 @@
 // Single source of UI strings. Keep every user-facing text here so the UI can be translated later.
+import type { PieceSymbol } from "chess.js";
 import type { MoveClass } from "@/lib/chess/classify";
+import type { Score } from "@/lib/chess/eval";
+import type { Explanation, PieceCounts } from "@/lib/chess/explain";
 import type { PgnError } from "@/lib/chess/pgn";
 
 export const messages = {
@@ -13,6 +16,8 @@ export const messages = {
     home: "Analizar",
     import: "Importar",
     history: "Historial",
+    train: "Entrenar",
+    stats: "Estadísticas",
     account: "Cuenta",
   },
   importPage: {
@@ -108,7 +113,81 @@ export const messages = {
     saved: "Guardado en tu historial",
     error: "No se pudo guardar.",
     loginToSave: "Entra para guardar este análisis",
+    colorLegend: "¿Con qué color jugabas?",
+    colorWhite: "Blancas",
+    colorBlack: "Negras",
+    colorNone: "No jugué",
+    colorHelp: "Tus errores se convertirán en ejercicios y contarán en tus estadísticas.",
+    chooseColor: "Elige con qué color jugabas para guardar",
     waitAnalysis: "Espera a que termine el análisis para guardarlo",
+  },
+  train: {
+    title: "Entrenar",
+    intro:
+      "Tus errores y errores graves, convertidos en ejercicios. Los que aciertas vuelven más tarde; los que fallas, mañana.",
+    loginNeeded: "Entra en tu cuenta para entrenar con tus partidas guardadas.",
+    goLogin: "Entrar o crear cuenta",
+    none: "Todavía no tienes ejercicios. Guarda análisis indicando con qué color jugabas y tus errores aparecerán aquí.",
+    allDone: (next: string | null) =>
+      next
+        ? `¡Al día! El próximo ejercicio toca el ${next}.`
+        : "¡Al día! No tienes ejercicios pendientes.",
+    progress: (done: number, due: number) => `Ejercicio ${done} de ${due}`,
+    prompt: (side: string) => `Juegan ${side}. Encuentra la mejor jugada.`,
+    white: "blancas",
+    black: "negras",
+    fromGame: (white: string, black: string, moveNumber: number) =>
+      `De tu partida ${white} – ${black} (jugada ${moveNumber}).`,
+    checking: "Comprobando tu jugada con el motor…",
+    correct: "¡Correcto!",
+    alsoGood: "¡Bien! No es la jugada del motor, pero también vale.",
+    wrong: "No era esa.",
+    solution: "La mejor era",
+    youPlayed: "En la partida jugaste",
+    lossNote: (n: number) => `Tu jugada pierde ${n} puntos de probabilidad de ganar.`,
+    next: "Siguiente",
+    showSolution: "Ver solución",
+    box: (n: number) => `Caja ${n} de 5`,
+    error: "No se pudieron cargar los ejercicios.",
+    loading: "Cargando…",
+  },
+  statsPage: {
+    title: "Estadísticas",
+    intro: "Calculadas con tus análisis guardados en los que indicaste con qué color jugabas.",
+    loginNeeded: "Entra en tu cuenta para ver tus estadísticas.",
+    goLogin: "Entrar o crear cuenta",
+    empty: "Todavía no hay datos. Guarda análisis indicando con qué color jugabas.",
+    loading: "Cargando…",
+    error: "No se pudieron cargar las estadísticas.",
+    summary: (games: number, moves: number) =>
+      `${games} ${games === 1 ? "partida" : "partidas"} · ${moves} ${moves === 1 ? "jugada tuya analizada" : "jugadas tuyas analizadas"}`,
+    phasesTitle: "Precisión por fase de la partida",
+    phases: { opening: "Apertura", middlegame: "Medio juego", endgame: "Final" },
+    phaseNote:
+      "Fases según el material sin peones (D 9, T 5, A y C 3; 62 al empezar): apertura hasta la jugada 10 con 52 o más; final con 26 o menos; medio juego el resto.",
+    accuracy: "Precisión",
+    moves: "Jugadas",
+    openingsTitle: "Aperturas con peor resultado",
+    opening: "Apertura",
+    games: "Partidas",
+    record: "+ / = / −",
+    score: "Puntos",
+    unknownOpening: "Sin identificar",
+    errorsTitle: "Tus errores más frecuentes",
+    errorsNote: (n: number) =>
+      `${n} ${n === 1 ? "error o error grave" : "errores y errores graves"} en total (las imprecisiones no cuentan).`,
+    byKind: "Por tipo",
+    byPhase: "Por fase",
+    byPiece: "Por pieza movida",
+    kinds: {
+      "allows-mate": "Permitir un mate",
+      "lost-mate": "Dejar escapar un mate",
+      hanging: "Dejar una pieza a merced del rival",
+      "loses-material": "Perder material en una secuencia",
+      "missed-tactic": "No ver una táctica ganadora",
+      "eval-swing": "Errores posicionales",
+    },
+    pieces: { k: "Rey", q: "Dama", r: "Torre", b: "Alfil", n: "Caballo", p: "Peón" },
   },
   home: {
     pgnLabel: "Partida en PGN",
@@ -157,6 +236,7 @@ export const messages = {
       "lost-mate": "deja escapar un mate forzado",
     },
     engineLine: "Línea del motor",
+    explanation: "Explicación",
     evaluation: "Evaluación",
     depthShort: "prof.",
     pending: "Pendiente de análisis…",
@@ -235,5 +315,57 @@ export function pgnErrorMessage(e: PgnError): string {
       return t.invalidFen;
     case "syntax":
       return t.syntax(e.line, e.column);
+  }
+}
+
+const PIECES: Record<PieceSymbol, { one: string; many: string; fem: boolean }> = {
+  p: { one: "peón", many: "peones", fem: false },
+  n: { one: "caballo", many: "caballos", fem: false },
+  b: { one: "alfil", many: "alfiles", fem: false },
+  r: { one: "torre", many: "torres", fem: true },
+  q: { one: "dama", many: "damas", fem: true },
+  k: { one: "rey", many: "reyes", fem: false },
+};
+const NUMBERS = ["", "", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho"];
+const ORDER: PieceSymbol[] = ["q", "r", "b", "n", "p"];
+
+/** {n: 1, p: 2} → "un caballo y dos peones". */
+export function describePieces(c: PieceCounts): string {
+  const parts = ORDER.filter((p) => (c[p] ?? 0) > 0).map((p) => {
+    const n = c[p] ?? 0;
+    const name = PIECES[p];
+    return n === 1 ? `${name.fem ? "una" : "un"} ${name.one}` : `${NUMBERS[n] ?? n} ${name.many}`;
+  });
+  if (parts.length === 0) return "material";
+  return parts.length === 1
+    ? (parts[0] as string)
+    : `${parts.slice(0, -1).join(", ")} y ${parts.at(-1)}`;
+}
+
+/** Text of a rule-based explanation. `line` numbers/translates SAN from a FEN; `score` formats evals. */
+export function explanationText(
+  e: Explanation,
+  line: (fen: string, san: readonly string[]) => string,
+  score: (s: Score) => string,
+): string {
+  switch (e.kind) {
+    case "allows-mate":
+      return e.mateIn === 1
+        ? `Permite mate inmediato: ${line(e.fen, e.line)}.`
+        : `Permite mate en ${e.mateIn}: ${line(e.fen, e.line)}.`;
+    case "lost-mate":
+      return `Había mate en ${e.mateIn} empezando con ${line(e.fen, [e.best])}; tras esta jugada ya no.`;
+    case "hanging": {
+      const p = PIECES[e.piece];
+      return `El rival se lleva tu ${p.one} de ${e.square} con ${line(e.fen, [e.capture])}.`;
+    }
+    case "loses-material": {
+      const gained = Object.keys(e.gained).length ? ` a cambio de ${describePieces(e.gained)}` : "";
+      return `Pierdes material: tras ${line(e.fen, e.line)}, el rival gana ${describePieces(e.lost)}${gained}.`;
+    }
+    case "missed-tactic":
+      return `Se te escapa ${line(e.fen, [e.best])}, que gana ${describePieces(e.won)}.`;
+    case "eval-swing":
+      return `La evaluación pasa de ${score(e.before)} a ${score(e.after)}; ${line(e.fen, [e.best])} era mejor.`;
   }
 }

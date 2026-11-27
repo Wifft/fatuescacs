@@ -1,9 +1,10 @@
 "use client";
 
 import { formatScore } from "@/lib/chess/eval";
+import { explainMove } from "@/lib/chess/explain";
 import { fenAfterUci, numberLine, uciLineToSan } from "@/lib/chess/line";
 import { displaySan, type Notation } from "@/lib/chess/notation";
-import { messages } from "@/messages/es";
+import { explanationText, messages } from "@/messages/es";
 import { useAnalysis } from "@/store/analysis";
 import { useReport } from "@/store/use-report";
 import { classColor } from "../ui";
@@ -55,6 +56,27 @@ export function CurrentMove() {
   const prev = ply > 0 ? evals[ply - 1] : null;
   const showBetter =
     c && last && prev?.best && c.cls !== "best" && c.cls !== "forced" && c.cls !== "book";
+  const explained =
+    c && last && prev && e
+      ? explainMove({
+          fenBefore: last.fenBefore,
+          playedUci: last.uci,
+          before: prev,
+          after: e,
+          classification: c,
+        })
+      : null;
+  const explanation = explained
+    ? explanationText(
+        explained,
+        (from, sans) =>
+          numberLine(
+            from,
+            sans.map((x) => displaySan(x, notation)),
+          ),
+        formatScore,
+      )
+    : null;
 
   return (
     <section
@@ -80,6 +102,11 @@ export function CurrentMove() {
               · {t.lossPrefix} {c.loss.toFixed(0)} {t.lossSuffix}
             </span>
           )}
+        </p>
+      )}
+      {explanation && (
+        <p data-testid="explanation">
+          <span className="text-muted">{t.explanation}:</span> {explanation}
         </p>
       )}
       {showBetter && last && prev?.best && (

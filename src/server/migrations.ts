@@ -41,4 +41,26 @@ export const MIGRATIONS: readonly string[] = [
   );
   CREATE INDEX analyses_user_updated ON analyses(user_id, updated_at DESC);
   `,
+  /* 2: which side the user played (training, stats) + spaced-repetition drills */ `
+  ALTER TABLE analyses ADD COLUMN user_color TEXT CHECK (user_color IN ('w', 'b'));
+
+  CREATE TABLE drills (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    analysis_id INTEGER NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
+    ply INTEGER NOT NULL,
+    fen TEXT NOT NULL,
+    played_uci TEXT NOT NULL,
+    best_uci TEXT NOT NULL,
+    best_pv TEXT NOT NULL,
+    cls TEXT NOT NULL,
+    loss REAL NOT NULL,
+    box INTEGER NOT NULL DEFAULT 0,
+    due_at INTEGER NOT NULL,
+    reviews INTEGER NOT NULL DEFAULT 0,
+    last_correct INTEGER,
+    UNIQUE (analysis_id, ply)
+  );
+  CREATE INDEX drills_user_due ON drills(user_id, due_at);
+  `,
 ];

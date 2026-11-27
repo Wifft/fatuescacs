@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { blockExternalNetwork, uniqueName } from "./helpers";
+import { blockExternalNetwork, registerUser, uniqueName } from "./helpers";
 
 const LEGAL = `[White "Legall"]
 [Black "Saint Brie"]
@@ -10,20 +10,6 @@ const LEGAL = `[White "Legall"]
 test.beforeEach(async ({ page }) => {
   await blockExternalNetwork(page);
 });
-
-async function registerUser(page: Page, user: string, password: string): Promise<string> {
-  await page.goto("/cuenta");
-  await page.getByRole("tab", { name: "Crear cuenta" }).click();
-  await page.getByTestId("account-username").fill(user);
-  await page.getByTestId("account-password").fill(password);
-  await page.getByTestId("account-submit").click();
-  const code = page.getByTestId("recovery-code");
-  await expect(code).toHaveText(/^[A-Z2-9]{5}(-[A-Z2-9]{5}){3}$/);
-  const text = (await code.textContent()) ?? "";
-  await page.getByTestId("code-saved").click();
-  await expect(page.getByTestId("logged-in")).toContainText(user);
-  return text;
-}
 
 async function analyseLegal(page: Page) {
   await page.goto("/");
@@ -39,6 +25,8 @@ test("register → analyse → save → history → reopen → delete", async ({
   await expect(page.getByTestId("progress-text")).toHaveAttribute("data-phase", "done", {
     timeout: 60_000,
   });
+  await expect(page.getByTestId("save-analysis")).toBeDisabled(); // colour not chosen yet
+  await page.getByRole("radio", { name: /Blancas/ }).check();
   await page.getByTestId("save-analysis").click();
   await expect(page.getByTestId("save-analysis")).toHaveText("Guardado en tu historial");
 
