@@ -29,6 +29,15 @@ Las cuentas y el historial se guardan en un fichero SQLite (`node:sqlite`, inclu
 
 Se guardan nombres de usuario, hashes de contraseña (scrypt) y los análisis que cada usuario decide guardar. No se guardan emails.
 
+## Despliegue con Docker
+
+```bash
+docker build -t fatuescacs .
+docker run -p 3000:3000 -v fatuescacs-data:/data fatuescacs
+```
+
+SQLite vive en el volumen `/data`. Sirve la app detrás de HTTPS: en producción la cookie de sesión es `Secure`. Solo para pruebas por HTTP, añade `-e INSECURE_COOKIES=1`.
+
 ## Comandos
 
 | Comando                | Qué hace                                                         |
