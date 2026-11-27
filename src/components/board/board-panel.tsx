@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useId, useMemo, useRef } from "react";
 import { Chessboard } from "react-chessboard";
 import { displaySan } from "@/lib/chess/notation";
-import { messages } from "@/messages/es";
+import { describePosition } from "@/lib/chess/describe";
+import { messages, positionText } from "@/messages/es";
 import { useAnalysis } from "@/store/analysis";
 import { Button } from "../ui";
 import { EvalBar } from "./eval-bar";
@@ -19,6 +20,7 @@ export function BoardPanel() {
   const notation = useAnalysis((s) => s.notation);
   const { step, goTo, flip } = useAnalysis.getState();
   const swipe = useRef<{ x: number; y: number } | null>(null);
+  const descId = useId();
 
   const fen = game?.fens[ply] ?? game?.startFen;
   const last = ply > 0 ? game?.moves[ply - 1] : undefined;
@@ -57,6 +59,7 @@ export function BoardPanel() {
     };
   }, [fen, orientation, last, evaluation?.best]);
 
+  const description = fen ? positionText(describePosition(fen)) : "";
   const boardLabel = last
     ? `${last.moveNumber}${last.color === "w" ? "." : "…"} ${displaySan(last.san, notation)}`
     : t.start;
@@ -69,6 +72,7 @@ export function BoardPanel() {
           className="min-w-0 flex-1 touch-pan-y overflow-hidden rounded shadow-[0_8px_28px_rgba(60,40,20,0.18)]"
           role="img"
           aria-label={t.boardLabel(boardLabel)}
+          aria-describedby={descId}
           data-testid="board"
           data-fen={fen}
           onPointerDown={(e) => {
@@ -86,9 +90,16 @@ export function BoardPanel() {
             swipe.current = null;
           }}
         >
-          <Chessboard options={options} />
+          {/* Display only: react-chessboard's pieces are unnamed buttons, so keep them out of
+              the accessibility tree and the tab order; the description below replaces them. */}
+          <div inert aria-hidden="true">
+            <Chessboard options={options} />
+          </div>
         </div>
       </div>
+      <p id={descId} className="sr-only">
+        {description}
+      </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button aria-label={t.first} onClick={() => goTo(0)} disabled={ply === 0}>
           «
@@ -104,6 +115,12 @@ export function BoardPanel() {
         </Button>
         <Button onClick={flip}>{t.flip}</Button>
       </div>
+      <details className="mt-3 text-sm">
+        <summary className="min-h-8 cursor-pointer text-muted">{t.describe}</summary>
+        <p className="mt-1" data-testid="position-description">
+          {description}
+        </p>
+      </details>
     </div>
   );
 }
