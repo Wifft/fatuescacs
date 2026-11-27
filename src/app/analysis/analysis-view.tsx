@@ -7,6 +7,7 @@ import { MoveList } from "@/components/moves/move-list";
 import { AccuracySummary } from "@/components/report/accuracy-summary";
 import { AnalysisProgress, Diagnostics } from "@/components/report/analysis-progress";
 import { CurrentMove } from "@/components/report/current-move";
+import { SaveButton } from "@/components/report/save-button";
 import { ClassLegend, EvalGraph } from "@/components/report/eval-graph";
 import { Button, Select } from "@/components/ui";
 import type { Notation } from "@/lib/chess/notation";
@@ -30,7 +31,7 @@ function loadFromHash(): LoadState {
   } catch (err) {
     return { status: "error", message: err instanceof PgnError ? pgnErrorMessage(err) : t.badLink };
   }
-  useAnalysis.getState().setGame(game);
+  useAnalysis.getState().setGame(game, pgn);
   void runAnalysis();
   loadOpeningTable()
     .then((table) => useAnalysis.getState().setOpening(game, identifyOpening(game.fens, table)))
@@ -170,6 +171,7 @@ export function AnalysisView() {
 
         <div className="grid gap-4">
           <AccuracySummary />
+          <SaveButton />
           <CurrentMove />
           <AnalysisProgress />
           <MoveList />

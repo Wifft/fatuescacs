@@ -8,6 +8,10 @@ import { useAnalysis } from "./analysis";
 
 // Persistent across reloads (IndexedDB), with an in-memory layer.
 let cache: IdbEvalCache | null = null;
+
+export function getEvalCache(): IdbEvalCache {
+  return (cache ??= new IdbEvalCache());
+}
 let current: AbortController | null = null;
 let running: Promise<unknown> | null = null;
 
@@ -45,7 +49,7 @@ export async function runAnalysis(): Promise<void> {
       engine: booted.engine,
       fens: game.fens,
       depth,
-      cache: (cache ??= new IdbEvalCache()),
+      cache: getEvalCache(),
       signal: ctrl.signal,
       onEval: (i, e) => {
         if (!ctrl.signal.aborted) useAnalysis.getState().setEval(i, e);

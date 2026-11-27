@@ -140,6 +140,16 @@ describe("analyzeGame", () => {
     expect(m.cacheHits).toBe(2);
   });
 
+  it("reuses cached final-depth evaluations in the quick pass (reopening a saved analysis)", async () => {
+    const engine = new CountingEngine();
+    const cache = new EvalCache();
+    const saved = { score: { kind: "cp", cp: 7 }, best: "e2e4", pv: ["e2e4"], depth: 16 } as const;
+    cache.set(START, 16, { ...saved, pv: [...saved.pv] });
+    cache.set(AFTER_E4, 16, { ...saved, pv: [...saved.pv] });
+    await analyzeGame({ engine, fens: [START, AFTER_E4], depth: 16, cache });
+    expect(engine.calls).toEqual([]);
+  });
+
   it("stops when aborted", async () => {
     const engine = new CountingEngine();
     const ctrl = new AbortController();

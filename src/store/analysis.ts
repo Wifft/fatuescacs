@@ -21,6 +21,8 @@ export interface EngineInfo {
 
 export interface AnalysisState {
   game: ParsedGame | null;
+  /** Original PGN text of the game (what gets shared and saved). */
+  pgn: string | null;
   /** evals[i] evaluates game.fens[i]; refined in place by the second pass. */
   evals: (PositionEval | null)[];
   ply: number;
@@ -34,7 +36,7 @@ export interface AnalysisState {
   /** Opening + book length; null until the opening table is loaded. */
   opening: OpeningInfo | null;
 
-  setGame(game: ParsedGame): void;
+  setGame(game: ParsedGame, pgn?: string): void;
   setOpening(game: ParsedGame, info: OpeningInfo): void;
   setEval(index: number, e: PositionEval): void;
   goTo(ply: number): void;
@@ -73,6 +75,7 @@ function writePref(key: string, value: string) {
 
 export const useAnalysis = create<AnalysisState>()((set, get) => ({
   game: null,
+  pgn: null,
   evals: [],
   ply: 0,
   orientation: "white",
@@ -84,9 +87,10 @@ export const useAnalysis = create<AnalysisState>()((set, get) => ({
   metrics: null,
   opening: null,
 
-  setGame: (game) =>
+  setGame: (game, pgn) =>
     set({
       game,
+      pgn: pgn ?? null,
       evals: Array.from({ length: game.fens.length }, () => null),
       ply: 0,
       progress: null,

@@ -17,7 +17,7 @@ export function SiteNav() {
   return (
     <nav aria-label={t.label} className="border-b border-line">
       <ul className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-1 px-4 py-2 sm:px-[4vw]">
-        <li className="mr-auto font-bold">
+        <li className="w-full font-bold sm:mr-auto sm:w-auto">
           <Link href="/" className="inline-flex min-h-11 items-center">
             ♞ {messages.app.title}
           </Link>

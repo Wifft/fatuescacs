@@ -89,7 +89,8 @@ export async function analyzeGame(opts: AnalyzeOptions): Promise<AnalysisMetrics
       if (signal?.aborted) throw new AbortError();
       onProgress?.({ done: i, total, phase: pass.phase, depth: pass.depth });
       const fen = fens[i] as string;
-      let e = await cache.get(fen, pass.depth);
+      // A cached evaluation at the final depth also serves the quick pass.
+      let e = (await cache.get(fen, depth)) ?? (await cache.get(fen, pass.depth));
       if (e) {
         if (pass.phase === "full") cacheHits++;
       } else {
